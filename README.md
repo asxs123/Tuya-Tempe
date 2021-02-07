@@ -8,6 +8,10 @@ This project is developed using Tuya SDK, which enables you to quickly develop b
 - Real-time display of equipment status through oled
 - Powered by lithium battery
 
+## Hardware
+
+For more information,please check [OSHWHub](https://oshwhub.com/asxs/zhi-neng-wen-shi-du-zhuan-gan-qi).
+
 ## License
 
 [MIT](https://github.com/Modular-X-01/diy-tuya-cloud-sw/blob/main/LICENSE)
