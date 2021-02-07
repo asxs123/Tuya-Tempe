@@ -1,0 +1,124 @@
+C51 COMPILER V9.60.0.0   USER_TIMER                                                        02/07/2021 13:51:22 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE USER_TIMER
+OBJECT MODULE PLACED IN .\Obj\User_Timer.obj
+COMPILER INVOKED BY: F:\Keil_v5\C51\BIN\C51.EXE src\User_Timer.c LARGE OPTIMIZE(9,SPEED) BROWSE INCDIR(.\;.\src;.\mcu_sd
+                    -k) DEBUG OBJECTEXTEND PRINT(.\List\User_Timer.lst) TABS(2) OBJECT(.\Obj\User_Timer.obj)
+
+line level    source
+
+   1          /******************************************************************************
+   2          文件名称: User_Timer.c
+   3          文件标识: STC8A8K64S4A12
+   4          摘    要: Timer用户函数
+   5          当前版本: V1.0  
+   6          完成日期: 2021.02.06
+   7          *******************************************************************************/
+   8          #define USER_TIMER_GLOBAL
+   9          #include "include.h"
+  10          
+  11          static unsigned long Timer_Value = 0;
+  12          static unsigned long Timer_250ms_Value = 0;
+  13          static unsigned long Timer_Sec_Value = 0;
+  14          
+  15          
+  16          /*****************************************************************************
+  17          函数名称 : timer0_init
+  18          功能描述 : timer0初始化
+  19          输入参数 : 无
+  20          返回参数 : 无
+  21          使用说明 : 10毫秒@11.0592MHz
+  22          *****************************************************************************/
+  23          void timer0_init(void)
+  24          {
+  25   1        AUXR &= 0x7F;                                                               //定时器时钟12T模式
+  26   1        TMOD &= 0xF0;                                                               //设置定时器模式
+  27   1        TL0 = 0x00;                                                                 //设置定时初值
+  28   1        TH0 = 0xDC;                                                                 //设置定时初值
+  29   1        TF0 = 0;                                                                    //清除TF0标志
+  30   1        TR0 = 1;                                                                    //定时器0开始计时
+  31   1        ET0 = 1;
+  32   1        //
+  33   1        Timer_Value = 0;
+  34   1        Timer_250ms_Value = 0;
+  35   1      }
+  36          /*****************************************************************************
+  37          函数名称 : timer0_isr_handle
+  38          功能描述 : timer0中断处理函数
+  39          输入参数 : 无
+  40          返回参数 : 无
+  41          使用说明 : 10毫秒@11.0592MHz
+  42          *****************************************************************************/
+  43          void timer0_isr_handle(void) interrupt 1
+  44          {
+  45   1        extern uint8_t is_read_time;
+  46   1      
+  47   1        Timer_Value ++;
+  48   1        if((Timer_Value % 25) == 0)
+  49   1        {
+  50   2          Timer_250ms_Value ++;
+  51   2          if(Timer_250ms_Value % 4 == 0)
+  52   2          {
+  53   3            Timer_Sec_Value ++;
+  54   3            if(Timer_Sec_Value % 15 == 0)
+C51 COMPILER V9.60.0.0   USER_TIMER                                                        02/07/2021 13:51:22 PAGE 2   
+
+  55   3            {
+  56   4              //15秒计时
+  57   4              is_read_time = 1;
+  58   4            }
+  59   3            
+  60   3            if(Timer_Sec_Value >= 60)
+  61   3            {
+  62   4              Timer_Sec_Value = 0;
+  63   4              
+  64   4              FlashBuffer.run_time ++;
+  65   4              /*if(FlashBuffer.run_time % 30 == 0)
+  66   4              {
+  67   4                //保存运行时间
+  68   4                Earse_Flash(PARA_ADDR);
+  69   4                if(Write_Flash(PARA_ADDR,(unsigned char *)&FlashBuffer,sizeof(FlashBuffer)) == ERROR)
+  70   4                {
+  71   4                }
+  72   4              }*/
+  73   4            }
+  74   3          }
+  75   2        }
+  76   1      }
+  77          /*****************************************************************************
+  78          函数名称 : get_count_value
+  79          功能描述 : 获取Timer0计数值
+  80          输入参数 : 无
+  81          返回参数 : Timer_Value
+  82          使用说明 : 无
+  83          *****************************************************************************/
+  84          unsigned long get_count_value(void)
+  85          {
+  86   1        return Timer_Value;
+  87   1      }
+  88          /*****************************************************************************
+  89          函数名称 : get_timer_250ms_value
+  90          功能描述 : 获取250ms计数值
+  91          输入参数 : 无
+  92          返回参数 : Timer_250ms_Value
+  93          使用说明 : 无
+  94          *****************************************************************************/
+  95          unsigned long get_timer_250ms_value(void)
+  96          {
+  97   1        return Timer_250ms_Value;
+  98   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    310    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     12    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
