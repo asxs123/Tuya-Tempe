@@ -4,11 +4,9 @@ This project is developed using Tuya SDK, which enables you to quickly develop b
 
 ## Introduce
 
-- Mainly through sht30 to monitor the indoor temperature and humidity, and upload to the cloud platform, you can view it at any time through the app
-- The two clouds represent the indoor and outdoor temperature and humidity respectively, and show the difference of indoor and outdoor environment by displaying different colors of RGB lamp beads
-- The connection status of the network can also be displayed through different display effects
-- Good fortune
-- For home decoration
+- This demo is mainly to monitor the environmental temperature and humidity through sht30, and upload it to the cloud platform, which can be viewed at any time through the APP
+- Real-time display of equipment status through oled
+- Powered by lithium battery
 
 ## License
 
