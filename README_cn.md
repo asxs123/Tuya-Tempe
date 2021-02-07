@@ -14,6 +14,10 @@
 - 可通过oled实时显示设备状况
 - 通过锂电池供电
 
+## 硬件
+
+欲了解更多信息，请查看[OSHWHub](https://oshwhub.com/asxs/zhi-neng-wen-shi-du-zhuan-gan-qi)。
+
 ## 开源协议
 
 [MIT](https://github.com/Modular-X-01/diy-tuya-cloud-sw/blob/main/LICENSE)
