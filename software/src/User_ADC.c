@@ -2,22 +2,20 @@
 文件名称: ADC.c
 文件标识: STC8A8K64S4A12
 摘    要: ADC硬件操作函数
-当前版本: V1.0	
-完成日期: 2021.02.03
+当前版本: V1.0.1  （电量显示改为百分比格式）
+完成日期: 2021.02.09
 *******************************************************************************/
 #define	USER_ADC_GLOBALS
 #include "include.h"
-//#include "wifi.h"
+#include "wifi.h"
 
 
 
 //#define Interrupt //中断方法
 #define Query     //查询方法
 
-/*****************************************************************************
-                ADC全局变量
-*****************************************************************************/
-int vcc;  //电池电压，单位mv
+
+
 
 #ifdef Interrupt
 
@@ -104,9 +102,9 @@ int ADC_read()
 void Get_Voltage()
 {
 	int res;
-	
+	int vcc;  //电池电压，单位mv
 	int i;
-	uint8_t g;
+	
 	ADC_init();
 	ADC_read();
 	ADC_read();
@@ -116,13 +114,74 @@ void Get_Voltage()
 		res += ADC_read();
 	}
 	res >>= 3;
-	vcc = (int)(6600L*res>>12);
-	g = (vcc+50)/1000;
-	OLED_ShowChar(96,0,g+'0',8);
-	OLED_ShowChar(104,0,'.',8);
-	g = (vcc+50)%1000/100;
-	OLED_ShowChar(112,0,g+'0',8);
-	OLED_ShowChar(120,0,'V',8);
+	vcc = (int)((6600L*res>>12)+50);  //电压计算
 	
-	
+	if((vcc <= 4200) && (vcc >= 4088))
+	{
+		FlashBuffer.Power = 100;
+		OLED_ShowNum(96,0,FlashBuffer.Power,3,8);
+		OLED_ShowChar(120,0,'%',8);
+	}
+	else if((vcc <= 4088) && (vcc >= 4012))
+	{
+		FlashBuffer.Power = 90;
+		OLED_ShowNum(96,0,FlashBuffer.Power,3,8);
+		OLED_ShowChar(120,0,'%',8);
+	}
+	else if((vcc <= 4012) && (vcc >= 3956))
+	{
+		FlashBuffer.Power = 80;
+		OLED_ShowNum(96,0,FlashBuffer.Power,3,8);
+		OLED_ShowChar(120,0,'%',8);
+	}
+	else if((vcc <= 3956) && (vcc >= 3910))
+	{
+		FlashBuffer.Power = 70;
+		OLED_ShowNum(96,0,FlashBuffer.Power,3,8);
+		OLED_ShowChar(120,0,'%',8);
+	}
+	else if((vcc <= 3910) && (vcc >= 3870))
+	{
+		FlashBuffer.Power = 60;
+		OLED_ShowNum(96,0,FlashBuffer.Power,3,8);
+		OLED_ShowChar(120,0,'%',8);
+	}
+	else if((vcc <= 3870) && (vcc >= 3830))
+	{
+		FlashBuffer.Power = 50;
+		OLED_ShowNum(96,0,FlashBuffer.Power,3,8);
+		OLED_ShowChar(120,0,'%',8);
+	}
+	else if((vcc <= 3830) && (vcc >= 3802))
+	{
+		FlashBuffer.Power = 40;
+		OLED_ShowNum(96,0,FlashBuffer.Power,3,8);
+		OLED_ShowChar(120,0,'%',8);
+	}
+	else if((vcc <= 3802) && (vcc >= 3782))
+	{
+		FlashBuffer.Power = 30;
+		OLED_ShowNum(96,0,FlashBuffer.Power,3,8);
+		OLED_ShowChar(120,0,'%',8);
+	}
+	else if((vcc <= 3782) && (vcc >= 3764))
+	{
+		FlashBuffer.Power = 20;
+		OLED_ShowNum(96,0,FlashBuffer.Power,3,8);
+		OLED_ShowChar(120,0,'%',8);
+	}
+	else if((vcc <= 3764) && (vcc >= 3740))
+	{
+		FlashBuffer.Power = 10;
+		OLED_ShowNum(96,0,FlashBuffer.Power,3,8);
+		OLED_ShowChar(120,0,'%',8);
+	}
+	else if(vcc <= 3740)
+	{
+		FlashBuffer.Power = 0;
+		OLED_ShowNum(96,0,FlashBuffer.Power,3,8);
+		OLED_ShowChar(120,0,'%',8);
+	}
+	mcu_dp_enum_update(DPID_BATTERY_STATE,FlashBuffer.Power);
+	mcu_dp_value_update(DPID_BATTERY_PERCENTAGE,FlashBuffer.Power); //VALUE型数据上报;
 }

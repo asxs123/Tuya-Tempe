@@ -44,8 +44,6 @@ sbit K1 = P0^7;			//按键1
 #define BRT         (65536-MAIN_Fosc/BaudRate/4)
 
 
-extern int vcc;         //电池电压（mv）
-
 //==============================================================================
 //变量定义
 //==============================================================================
@@ -53,7 +51,8 @@ typedef struct {
 	
 	signed int temper;                                        //温度
   uint8_t humidity;                                         //湿度
-	uint32_t run_time;                                                            //累计运行时间
+	uint8_t Power;
+	uint16_t SAMPLING;
 	
 } TYPE_BUFFER_S;
 

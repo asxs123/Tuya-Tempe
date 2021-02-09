@@ -140,8 +140,11 @@ void all_data_update(void)
     //#error "请在此处理可下发可上报数据及只上报数据示例,处理完成后删除该行"
 	  mcu_dp_value_update(DPID_TEMP_CURRENT,FlashBuffer.temper); //VALUE型数据上报;
     mcu_dp_value_update(DPID_HUMIDITY_VALUE,FlashBuffer.humidity); //VALUE型数据上报;
-    mcu_dp_enum_update(DPID_BATTERY_STATE,vcc); //枚举型数据上报;
-    /*
+    mcu_dp_enum_update(DPID_BATTERY_STATE,FlashBuffer.Power); //枚举型数据上报;
+	  mcu_dp_value_update(DPID_BATTERY_PERCENTAGE,FlashBuffer.Power); //VALUE型数据上报;
+    mcu_dp_value_update(DPID_TEMP_SAMPLING,FlashBuffer.SAMPLING); //VALUE型数据上报;
+    mcu_dp_value_update(DPID_HUMIDITY_SAMPLING,FlashBuffer.SAMPLING); //VALUE型数据上报;
+		/*
     //此代码为平台自动生成，请按照实际数据修改每个可下发可上报函数和只上报函数
     mcu_dp_value_update(DPID_TEMP_CURRENT,当前当前温度); //VALUE型数据上报;
     mcu_dp_value_update(DPID_HUMIDITY_VALUE,当前当前湿度); //VALUE型数据上报;
@@ -178,7 +181,7 @@ static unsigned char dp_download_temp_sampling_handle(const unsigned char value[
     //VALUE类型数据处理
     
     */
-    
+    FlashBuffer.SAMPLING = temp_sampling;
     //处理完DP数据后应有反馈
     ret = mcu_dp_value_update(DPID_TEMP_SAMPLING,temp_sampling);
     if(ret == SUCCESS)
@@ -205,7 +208,7 @@ static unsigned char dp_download_humidity_sampling_handle(const unsigned char va
     //VALUE类型数据处理
     
     */
-    
+    FlashBuffer.SAMPLING = humidity_sampling;
     //处理完DP数据后应有反馈
     ret = mcu_dp_value_update(DPID_HUMIDITY_SAMPLING,humidity_sampling);
     if(ret == SUCCESS)
@@ -352,7 +355,7 @@ void mcu_get_greentime(unsigned char time[])
  */
 void mcu_write_rtctime(unsigned char time[])
 {
-    #error "请自行完成RTC时钟写入代码,并删除该行"
+    //#error "请自行完成RTC时钟写入代码,并删除该行"
     /*
     Time[0] 为是否获取时间成功标志，为 0 表示失败，为 1表示成功
     Time[1] 为年份，0x00 表示 2000 年
@@ -365,6 +368,11 @@ void mcu_write_rtctime(unsigned char time[])
    */
     if(time[0] == 1) {
         //正确接收到wifi模块返回的本地时钟数据
+			OLED_ShowNum(40,0,time[4],2,8);
+			OLED_ShowChar(52,0,':',8);
+			OLED_ShowNum(58,0,time[5],2,8);
+			OLED_ShowChar(70,0,':',8);
+			OLED_ShowNum(76,0,time[6],2,8);
      
     }else {
         //获取本地时钟数据出错,有可能是当前wifi模块未联网
