@@ -40,11 +40,12 @@ static void Bsp_Init(void)
 	uart3_init();        //串口3初始化
 	wifi_protocol_init();//WiFi模组初始化
 	I2C_init();          //I2C初始化
-	OLED_Init();         //OLED初始化
-	OLED_Clear();        //OLED清屏
+	ADC_init();          //ADC初始化
 	SHT_Init();          //SHT3X初始化
 	timer0_init();       //定时器初始化	
-	key_init();
+	OLED_Init();         //OLED初始化
+	OLED_Clear();        //OLED清屏
+	key_init();          //按键初始化
 }
 
 /*****************************************************************************

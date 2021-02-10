@@ -82,6 +82,7 @@ int ADC_read()
 	ADC_CONTR |= 0x40;                      //启动AD转换
 	_nop_();
 	_nop_();
+	//_nop_();
 	while (!(ADC_CONTR & 0x20));            //查询ADC完成标志
 	ADC_CONTR &= ~0x20;                     //清完成标志
 	res = (ADC_RES<<8)|ADC_RESL;            //读取ADC结果
@@ -105,7 +106,7 @@ void Get_Voltage()
 	int vcc;  //电池电压，单位mv
 	int i;
 	
-	ADC_init();
+	//ADC_init();
 	ADC_read();
 	ADC_read();
 	res = 0;

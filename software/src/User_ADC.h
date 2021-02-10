@@ -10,7 +10,9 @@
 
 
 
-//void ADC_init();
+void ADC_init();
+
+int ADC_read();
 
 void Get_Voltage();
 
