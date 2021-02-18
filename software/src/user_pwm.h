@@ -1,29 +1,28 @@
-#ifndef __USER_UART_H__
-#define __USER_UART_H__
+#ifndef __USER_PWM_H__
+#define __USER_PWM_H__
 
-
-#ifdef USER_UART_GLOBALS
-#define USER_UART_EXT
+#ifdef USER_PWM_GLOBALS
+#define USER_PWM_EXT
 #else
-#define USER_UART_EXT extern 
+#define USER_PWM_EXT extern 
 #endif
 
 /*****************************************************************************
-函数名称 : uart1_init
-功能描述 : uart1初始化
+函数名称 : pwm_init
+功能描述 : pwm初始化
 输入参数 : 无
 返回参数 : 无
 使用说明 : 无
 *****************************************************************************/
-void uart1_init(void);
+void pwm_init(void);
 /*****************************************************************************
-函数名称 : Uart_PutChar
-功能描述 : 串口发送
-输入参数 : dat:待发送数据
+函数名称 : LED_RGB_Control
+功能描述 : RGB_LED控制
+输入参数 : r/g/b:亮度值
 返回参数 : 无
 使用说明 : 无
 *****************************************************************************/
-void Uart_PutChar(unsigned char dat);
+void LED_RGB_Control(unsigned char r,unsigned char g,unsigned char b);
 
 #endif
 

@@ -1,1169 +1,585 @@
-/**********************************Copyright (c)**********************************
-**                       ç‰ˆæƒæ‰€æœ‰ (C), 2015-2020, æ¶‚é¸¦ç§‘æŠ€
+/****************************************Copyright (c)*************************
+**                               °æÈ¨ËùÓĞ (C), 2015-2020, Í¿Ñ»¿Æ¼¼
 **
-**                             http://www.tuya.com
+**                                 http://www.tuya.com
 **
-*********************************************************************************/
-/**
- * @file    protocol.c
- * @author  æ¶‚é¸¦ç»¼åˆåè®®å¼€å‘ç»„
- * @version v2.5.6
- * @date    2020.12.16
- * @brief                
- *                       *******éå¸¸é‡è¦ï¼Œä¸€å®šè¦çœ‹å“¦ï¼ï¼ï¼********
- *          1. ç”¨æˆ·åœ¨æ­¤æ–‡ä»¶ä¸­å®ç°æ•°æ®ä¸‹å‘/ä¸ŠæŠ¥åŠŸèƒ½
- *          2. DPçš„ID/TYPEåŠæ•°æ®å¤„ç†å‡½æ•°éƒ½éœ€è¦ç”¨æˆ·æŒ‰ç…§å®é™…å®šä¹‰å®ç°
- *          3. å½“å¼€å§‹æŸäº›å®å®šä¹‰åéœ€è¦ç”¨æˆ·å®ç°ä»£ç çš„å‡½æ•°å†…éƒ¨æœ‰#erræç¤º,å®Œæˆå‡½æ•°åè¯·åˆ é™¤è¯¥#err
- */
+**--------------ÎÄ¼şĞÅÏ¢-------------------------------------------------------
+**ÎÄ   ¼ş   Ãû: protocol.c
+**Ãè        Êö: ÏÂ·¢/ÉÏ±¨Êı¾İ´¦Àíº¯Êı
+**Ê¹ ÓÃ Ëµ Ã÷ :
 
-/****************************** å…è´£å£°æ˜ ï¼ï¼ï¼ *******************************
-ç”±äºMCUç±»å‹å’Œç¼–è¯‘ç¯å¢ƒå¤šç§å¤šæ ·ï¼Œæ‰€ä»¥æ­¤ä»£ç ä»…ä¾›å‚è€ƒï¼Œç”¨æˆ·è¯·è‡ªè¡ŒæŠŠæ§æœ€ç»ˆä»£ç è´¨é‡ï¼Œ
-æ¶‚é¸¦ä¸å¯¹MCUåŠŸèƒ½ç»“æœè´Ÿè´£ã€‚
+                  *******·Ç³£ÖØÒª£¬Ò»¶¨Òª¿´Å¶£¡£¡£¡********
+
+** 1¡¢ÓÃ»§ÔÚ´ËÎÄ¼şÖĞÊµÏÖÊı¾İÏÂ·¢/ÉÏ±¨¹¦ÄÜ
+** 2¡¢DPµÄID/TYPE¼°Êı¾İ´¦Àíº¯Êı¶¼ĞèÒªÓÃ»§°´ÕÕÊµ¼Ê¶¨ÒåÊµÏÖ
+** 3¡¢µ±¿ªÊ¼Ä³Ğ©ºê¶¨ÒåºóĞèÒªÓÃ»§ÊµÏÖ´úÂëµÄº¯ÊıÄÚ²¿ÓĞ#errÌáÊ¾,Íê³Éº¯ÊıºóÇëÉ¾³ı¸Ã#err
+**
+**--------------µ±Ç°°æ±¾ĞŞ¶©---------------------------------------------------
+** °æ  ±¾: v2.3.6
+** ÈÕ¡¡ÆÚ: 2016Äê7ÔÂ21ÈÕ
+** Ãè¡¡Êö: 1:ĞŞ¸´»ñÈ¡±¾µØÊ±¼ä´íÎó
+           2:Ìí¼Óhex_to_bcd×ª»»º¯Êı
+		   
+** °æ  ±¾: v2.3.5
+** ÈÕ¡¡ÆÚ: 2016Äê6ÔÂ3ÈÕ
+** Ãè¡¡Êö: 1:ĞŞ¸Ä·µ»ØĞ­Òé°æ±¾Îª0x01
+           2:¹Ì¼şÉı¼¶Êı¾İÆ«ÒÆÁ¿ĞŞ¸ÄÎª4×Ö½Ú
+
+** °æ  ±¾: v2.3.4
+** ÈÕ¡¡ÆÚ: 2016Äê5ÔÂ26ÈÕ
+** Ãè¡¡Êö: 1:ÓÅ»¯´®¿Ú½âÎöº¯Êı
+           2:ÓÅ»¯±àÒëÆ÷¼æÈİĞÔ,È¡ÏûenumÀàĞÍ¶¨Òå
+
+** °æ  ±¾: v2.3.3
+** ÈÕ¡¡ÆÚ: 2016Äê5ÔÂ24ÈÕ
+** Ãè¡¡Êö: 1:ĞŞ¸Ämcu»ñÈ¡±¾µØÊ±¼äº¯Êı
+           2:Ìí¼Ówifi¹¦ÄÜ²âÊÔ
+
+** °æ  ±¾: v2.3.2
+** ÈÕ¡¡ÆÚ: 2016Äê4ÔÂ23ÈÕ
+** Ãè¡¡Êö: 1:ÓÅ»¯´®¿ÚÊı¾İ½âÎö
+           2:ÓÅ»¯MCU¹Ì¼şÉı¼¶Á÷³Ì
+           3:ÓÅ»¯ÉÏ±¨Á÷³Ì
+
+** °æ  ±¾: v2.3.1
+** ÈÕ¡¡ÆÚ: 2016Äê4ÔÂ15ÈÕ
+** Ãè¡¡Êö: 1:ÓÅ»¯´®¿ÚÊı¾İ½âÎö
+
+** °æ  ±¾: v2.3
+** ÈÕ¡¡ÆÚ: 2016Äê4ÔÂ14ÈÕ
+** Ãè¡¡Êö: 1:Ö§³ÖMCU¹Ì¼şÔÚÏßÉı¼¶
+
+** °æ  ±¾: v2.2
+** ÈÕ¡¡ÆÚ: 2016Äê4ÔÂ11ÈÕ
+** Ãè¡¡Êö: 1:ĞŞ¸Ä´®¿ÚÊı¾İ½ÓÊÕ·½Ê½
+
+** °æ  ±¾: v2.1
+** ÈÕ¡¡ÆÚ: 2016Äê4ÔÂ8ÈÕ
+** Ãè¡¡Êö: 1:¼ÓÈëÄ³Ğ©±àÒëÆ÷²»Ö§³Öº¯ÊıÖ¸Õë¼æÈİÑ¡Ïî
+
+** °æ  ±¾: v2.0
+** ÈÕ¡¡ÆÚ: 2016Äê3ÔÂ29ÈÕ
+** Ãè¡¡Êö: 1:ÓÅ»¯´úÂë½á¹¹
+           2:½ÚÊ¡RAM¿Õ¼ä
+**
+**-----------------------------------------------------------------------------
 ******************************************************************************/
-
-/******************************************************************************
-                                ç§»æ¤é¡»çŸ¥:
-1:MCUå¿…é¡»åœ¨whileä¸­ç›´æ¥è°ƒç”¨mcu_api.cå†…çš„wifi_uart_service()å‡½æ•°
-2:ç¨‹åºæ­£å¸¸åˆå§‹åŒ–å®Œæˆå,å»ºè®®ä¸è¿›è¡Œå…³ä¸²å£ä¸­æ–­,å¦‚å¿…é¡»å…³ä¸­æ–­,å…³ä¸­æ–­æ—¶é—´å¿…é¡»çŸ­,å…³ä¸­æ–­ä¼šå¼•èµ·ä¸²å£æ•°æ®åŒ…ä¸¢å¤±
-3:è¯·å‹¿åœ¨ä¸­æ–­/å®šæ—¶å™¨ä¸­æ–­å†…è°ƒç”¨ä¸ŠæŠ¥å‡½æ•°
-******************************************************************************/
-
-#include "wifi.h"
 #include "include.h"
+#include "wifi.h"
 
-#ifdef WEATHER_ENABLE
-/**
- * @var    weather_choose
- * @brief  å¤©æ°”æ•°æ®å‚æ•°é€‰æ‹©æ•°ç»„
- * @note   ç”¨æˆ·å¯ä»¥è‡ªå®šä¹‰éœ€è¦çš„å‚æ•°ï¼Œæ³¨é‡Šæˆ–è€…å–æ¶ˆæ³¨é‡Šå³å¯ï¼Œæ³¨æ„æ›´æ”¹
- */
-const char *weather_choose[WEATHER_CHOOSE_CNT] = {
-    "temp",
-    "humidity",
-    "condition",
-    "pm25",
-    /*"pressure",
-    "realFeel",
-    "uvi",
-    "tips",
-    "windDir",
-    "windLevel",
-    "windSpeed",
-    "sunRise",
-    "sunSet",
-    "aqi",
-    "so2 ",
-    "rank",
-    "pm10",
-    "o3",
-    "no2",
-    "co",
-    "conditionNum",*/
-};
-#endif
-
+extern TYPE_BUFFER_S FlashBuffer;
 
 /******************************************************************************
-                              ç¬¬ä¸€æ­¥:åˆå§‹åŒ–
-1:åœ¨éœ€è¦ä½¿ç”¨åˆ°wifiç›¸å…³æ–‡ä»¶çš„æ–‡ä»¶ä¸­include "wifi.h"
-2:åœ¨MCUåˆå§‹åŒ–ä¸­è°ƒç”¨mcu_api.cæ–‡ä»¶ä¸­çš„wifi_protocol_init()å‡½æ•°
-3:å°†MCUä¸²å£å•å­—èŠ‚å‘é€å‡½æ•°å¡«å…¥protocol.cæ–‡ä»¶ä¸­uart_transmit_outputå‡½æ•°å†…,å¹¶åˆ é™¤#error
-4:åœ¨MCUä¸²å£æ¥æ”¶å‡½æ•°ä¸­è°ƒç”¨mcu_api.cæ–‡ä»¶å†…çš„uart_receive_inputå‡½æ•°,å¹¶å°†æ¥æ”¶åˆ°çš„å­—èŠ‚ä½œä¸ºå‚æ•°ä¼ å…¥
-5:å•ç‰‡æœºè¿›å…¥whileå¾ªç¯åè°ƒç”¨mcu_api.cæ–‡ä»¶å†…çš„wifi_uart_service()å‡½æ•°
+                                ÒÆÖ²ĞëÖª:
+1:MCU±ØĞëÔÚwhileÖĞÖ±½Óµ÷ÓÃmcu_api.cÄÚµÄwifi_uart_service()º¯Êı
+2:³ÌĞòÕı³£³õÊ¼»¯Íê³Éºó,½¨Òé²»½øĞĞ¹Ø´®¿ÚÖĞ¶Ï,Èç±ØĞë¹ØÖĞ¶Ï,¹ØÖĞ¶ÏÊ±¼ä±ØĞë¶Ì,¹ØÖĞ¶Ï»áÒıÆğ´®¿ÚÊı¾İ°ü¶ªÊ§
+3:ÇëÎğÔÚÖĞ¶Ï/¶¨Ê±Æ÷ÖĞ¶ÏÄÚµ÷ÓÃÉÏ±¨º¯Êı
+******************************************************************************/
+
+         
+/******************************************************************************
+                              µÚÒ»²½:³õÊ¼»¯
+1:ÔÚĞèÒªÊ¹ÓÃµ½wifiÏà¹ØÎÄ¼şµÄÎÄ¼şÖĞinclude "wifi.h"
+2:ÔÚMCU³õÊ¼»¯ÖĞµ÷ÓÃmcu_api.cÎÄ¼şÖĞµÄwifi_protocol_init()º¯Êı
+3:½«MCU´®¿Úµ¥×Ö½Ú·¢ËÍº¯ÊıÌîÈëprotocol.cÎÄ¼şÖĞuart_transmit_outputº¯ÊıÄÚ,²¢É¾³ı#error
+4:ÔÚMCU´®¿Ú½ÓÊÕº¯ÊıÖĞµ÷ÓÃmcu_api.cÎÄ¼şÄÚµÄuart_receive_inputº¯Êı,²¢½«½ÓÊÕµ½µÄ×Ö½Ú×÷Îª²ÎÊı´«Èë
+5:µ¥Æ¬»ú½øÈëwhileÑ­»·ºóµ÷ÓÃmcu_api.cÎÄ¼şÄÚµÄwifi_uart_service()º¯Êı
 ******************************************************************************/
 
 /******************************************************************************
-                        1:dpæ•°æ®ç‚¹åºåˆ—ç±»å‹å¯¹ç…§è¡¨
-          **æ­¤ä¸ºè‡ªåŠ¨ç”Ÿæˆä»£ç ,å¦‚åœ¨å¼€å‘å¹³å°æœ‰ç›¸å…³ä¿®æ”¹è¯·é‡æ–°ä¸‹è½½MCU_SDK**         
+                        1:dpÊı¾İµãĞòÁĞÀàĞÍ¶ÔÕÕ±í
+          **´ËÎª×Ô¶¯Éú³É´úÂë,ÈçÔÚ¿ª·¢Æ½Ì¨ÓĞÏà¹ØĞŞ¸ÄÇëÖØĞÂÏÂÔØMCU_SDK**         
 ******************************************************************************/
 const DOWNLOAD_CMD_S download_cmd[] =
 {
-  {DPID_TEMP_CURRENT, DP_TYPE_VALUE},
-  {DPID_HUMIDITY_VALUE, DP_TYPE_VALUE},
-  {DPID_BATTERY_STATE, DP_TYPE_ENUM},
-  {DPID_BATTERY_PERCENTAGE, DP_TYPE_VALUE},
-  {DPID_TEMP_SAMPLING, DP_TYPE_VALUE},
-  {DPID_HUMIDITY_SAMPLING, DP_TYPE_VALUE},
+  {DPID_SWITCH, DP_TYPE_BOOL},
+  {DPID_MODE, DP_TYPE_ENUM},
+  {DPID_SPEED, DP_TYPE_ENUM},
+  {DPID_PM25, DP_TYPE_VALUE},
+  {DPID_FILTER, DP_TYPE_VALUE},
+  {DPID_LOCK, DP_TYPE_BOOL},
+  {DPID_TEMP, DP_TYPE_VALUE},
+  {DPID_HUMIDITY, DP_TYPE_VALUE},
+  {DPID_TVOC, DP_TYPE_VALUE},
+  {DPID_TOTALTIME, DP_TYPE_VALUE},
+  {DPID_FAULT, DP_TYPE_FAULT},
 };
 
 
-
 /******************************************************************************
-                           2:ä¸²å£å•å­—èŠ‚å‘é€å‡½æ•°
-è¯·å°†MCUä¸²å£å‘é€å‡½æ•°å¡«å…¥è¯¥å‡½æ•°å†…,å¹¶å°†æ¥æ”¶åˆ°çš„æ•°æ®ä½œä¸ºå‚æ•°ä¼ å…¥ä¸²å£å‘é€å‡½æ•°
+                           2:´®¿Úµ¥×Ö½Ú·¢ËÍº¯Êı
+Çë½«MCU´®¿Ú·¢ËÍº¯ÊıÌîÈë¸Ãº¯ÊıÄÚ,²¢½«½ÓÊÕµ½µÄÊı¾İ×÷Îª²ÎÊı´«Èë´®¿Ú·¢ËÍº¯Êı
 ******************************************************************************/
 
-/**
- * @brief  ä¸²å£å‘é€æ•°æ®
- * @param[in] {value} ä¸²å£è¦å‘é€çš„1å­—èŠ‚æ•°æ®
- * @return Null
- */
+/*****************************************************************************
+º¯ÊıÃû³Æ : uart_transmit_output
+¹¦ÄÜÃèÊö : ·¢Êı¾İ´¦Àí
+ÊäÈë²ÎÊı : value:´®¿ÚÊÕµ½×Ö½ÚÊı¾İ
+·µ»Ø²ÎÊı : ÎŞ
+Ê¹ÓÃËµÃ÷ : Çë½«MCU´®¿Ú·¢ËÍº¯ÊıÌîÈë¸Ãº¯ÊıÄÚ,²¢½«½ÓÊÕµ½µÄÊı¾İ×÷Îª²ÎÊı´«Èë´®¿Ú·¢ËÍº¯Êı
+*****************************************************************************/
 void uart_transmit_output(unsigned char value)
 {
-    //#error "è¯·å°†MCUä¸²å£å‘é€å‡½æ•°å¡«å…¥è¯¥å‡½æ•°,å¹¶åˆ é™¤è¯¥è¡Œ"
-	  extern void Uart_PutChar(unsigned char value);
-    Uart_PutChar(value);	                        
-    
-/*
-    //Example:
-    extern void Uart_PutChar(unsigned char value);
-    Uart_PutChar(value);	                                //ä¸²å£å‘é€å‡½æ•°
-*/
+//  #error "Çë½«MCU´®¿Ú·¢ËÍº¯ÊıÌîÈë¸Ãº¯Êı,²¢É¾³ı¸ÃĞĞ"
+  //Ê¾Àı:
+  extern void Uart_PutChar(unsigned char value);
+  Uart_PutChar(value);	                                //´®¿Ú·¢ËÍº¯Êı
+
 }
-
 /******************************************************************************
-                           ç¬¬äºŒæ­¥:å®ç°å…·ä½“ç”¨æˆ·å‡½æ•°
-1:APPä¸‹å‘æ•°æ®å¤„ç†
-2:æ•°æ®ä¸ŠæŠ¥å¤„ç†
+                           µÚ¶ş²½:ÊµÏÖ¾ßÌåÓÃ»§º¯Êı
+1:APPÏÂ·¢Êı¾İ´¦Àí
+2:Êı¾İÉÏ±¨´¦Àí
 ******************************************************************************/
 
 /******************************************************************************
-                            1:æ‰€æœ‰æ•°æ®ä¸ŠæŠ¥å¤„ç†
-å½“å‰å‡½æ•°å¤„ç†å…¨éƒ¨æ•°æ®ä¸ŠæŠ¥(åŒ…æ‹¬å¯ä¸‹å‘/å¯ä¸ŠæŠ¥å’Œåªä¸ŠæŠ¥)
-  éœ€è¦ç”¨æˆ·æŒ‰ç…§å®é™…æƒ…å†µå®ç°:
-  1:éœ€è¦å®ç°å¯ä¸‹å‘/å¯ä¸ŠæŠ¥æ•°æ®ç‚¹ä¸ŠæŠ¥
-  2:éœ€è¦å®ç°åªä¸ŠæŠ¥æ•°æ®ç‚¹ä¸ŠæŠ¥
-æ­¤å‡½æ•°ä¸ºMCUå†…éƒ¨å¿…é¡»è°ƒç”¨
-ç”¨æˆ·ä¹Ÿå¯è°ƒç”¨æ­¤å‡½æ•°å®ç°å…¨éƒ¨æ•°æ®ä¸ŠæŠ¥
+                            1:ËùÓĞÊı¾İÉÏ±¨´¦Àí
+µ±Ç°º¯Êı´¦ÀíÈ«²¿Êı¾İÉÏ±¨(°üÀ¨¿ÉÏÂ·¢/¿ÉÉÏ±¨ºÍÖ»ÉÏ±¨)
+  ĞèÒªÓÃ»§°´ÕÕÊµ¼ÊÇé¿öÊµÏÖ:
+  1:ĞèÒªÊµÏÖ¿ÉÏÂ·¢/¿ÉÉÏ±¨Êı¾İµãÉÏ±¨
+  2:ĞèÒªÊµÏÖÖ»ÉÏ±¨Êı¾İµãÉÏ±¨
+´Ëº¯ÊıÎªMCUÄÚ²¿±ØĞëµ÷ÓÃ
+ÓÃ»§Ò²¿Éµ÷ÓÃ´Ëº¯ÊıÊµÏÖÈ«²¿Êı¾İÉÏ±¨
 ******************************************************************************/
 
-//è‡ªåŠ¨åŒ–ç”Ÿæˆæ•°æ®ä¸ŠæŠ¥å‡½æ•°
+//×Ô¶¯»¯Éú³ÉÊı¾İÉÏ±¨º¯Êı
 
-/**
- * @brief  ç³»ç»Ÿæ‰€æœ‰dpç‚¹ä¿¡æ¯ä¸Šä¼ ,å®ç°APPå’Œmucæ•°æ®åŒæ­¥
- * @param  Null
- * @return Null
- * @note   æ­¤å‡½æ•°SDKå†…éƒ¨éœ€è°ƒç”¨ï¼ŒMCUå¿…é¡»å®ç°è¯¥å‡½æ•°å†…æ•°æ®ä¸ŠæŠ¥åŠŸèƒ½ï¼ŒåŒ…æ‹¬åªä¸ŠæŠ¥å’Œå¯ä¸ŠæŠ¥å¯ä¸‹å‘å‹æ•°æ®
- */
+/*****************************************************************************
+º¯ÊıÃû³Æ : all_data_update
+¹¦ÄÜÃèÊö : ÏµÍ³ËùÓĞdpµãĞÅÏ¢ÉÏ´«,ÊµÏÖAPPºÍmucÊı¾İÍ¬²½
+ÊäÈë²ÎÊı : ÎŞ
+·µ»Ø²ÎÊı : ÎŞ
+Ê¹ÓÃËµÃ÷ : ´Ëº¯ÊıSDKÄÚ²¿Ğèµ÷ÓÃ;
+           MCU±ØĞëÊµÏÖ¸Ãº¯ÊıÄÚÊı¾İÉÏ±¨¹¦ÄÜ;°üÀ¨Ö»ÉÏ±¨ºÍ¿ÉÉÏ±¨¿ÉÏÂ·¢ĞÍÊı¾İ
+*****************************************************************************/
 void all_data_update(void)
 {
-    //#error "è¯·åœ¨æ­¤å¤„ç†å¯ä¸‹å‘å¯ä¸ŠæŠ¥æ•°æ®åŠåªä¸ŠæŠ¥æ•°æ®ç¤ºä¾‹,å¤„ç†å®Œæˆååˆ é™¤è¯¥è¡Œ"
-	  mcu_dp_value_update(DPID_TEMP_CURRENT,FlashBuffer.temper); //VALUEå‹æ•°æ®ä¸ŠæŠ¥;
-    mcu_dp_value_update(DPID_HUMIDITY_VALUE,FlashBuffer.humidity); //VALUEå‹æ•°æ®ä¸ŠæŠ¥;
-    mcu_dp_enum_update(DPID_BATTERY_STATE,FlashBuffer.Power); //æšä¸¾å‹æ•°æ®ä¸ŠæŠ¥;
-	  mcu_dp_value_update(DPID_BATTERY_PERCENTAGE,FlashBuffer.Power); //VALUEå‹æ•°æ®ä¸ŠæŠ¥;
-    mcu_dp_value_update(DPID_TEMP_SAMPLING,FlashBuffer.SAMPLING); //VALUEå‹æ•°æ®ä¸ŠæŠ¥;
-    mcu_dp_value_update(DPID_HUMIDITY_SAMPLING,FlashBuffer.SAMPLING); //VALUEå‹æ•°æ®ä¸ŠæŠ¥;
-		/*
-    //æ­¤ä»£ç ä¸ºå¹³å°è‡ªåŠ¨ç”Ÿæˆï¼Œè¯·æŒ‰ç…§å®é™…æ•°æ®ä¿®æ”¹æ¯ä¸ªå¯ä¸‹å‘å¯ä¸ŠæŠ¥å‡½æ•°å’Œåªä¸ŠæŠ¥å‡½æ•°
-    mcu_dp_value_update(DPID_TEMP_CURRENT,å½“å‰å½“å‰æ¸©åº¦); //VALUEå‹æ•°æ®ä¸ŠæŠ¥;
-    mcu_dp_value_update(DPID_HUMIDITY_VALUE,å½“å‰å½“å‰æ¹¿åº¦); //VALUEå‹æ•°æ®ä¸ŠæŠ¥;
-    mcu_dp_enum_update(DPID_BATTERY_STATE,å½“å‰ç”µæ± ç”µé‡çŠ¶æ€); //æšä¸¾å‹æ•°æ®ä¸ŠæŠ¥;
-    mcu_dp_value_update(DPID_BATTERY_PERCENTAGE,å½“å‰ç”µæ± ç”µé‡); //VALUEå‹æ•°æ®ä¸ŠæŠ¥;
-    mcu_dp_value_update(DPID_TEMP_SAMPLING,å½“å‰æ¸©åº¦é‡‡æ ·æ—¶é—´è®¾ç½®); //VALUEå‹æ•°æ®ä¸ŠæŠ¥;
-    mcu_dp_value_update(DPID_HUMIDITY_SAMPLING,å½“å‰æ¹¿åº¦é‡‡æ ·æ—¶é—´è®¾ç½®); //VALUEå‹æ•°æ®ä¸ŠæŠ¥;
-
-    */
+//  #error "ÇëÔÚ´Ë´¦Àí¿ÉÏÂ·¢¿ÉÉÏ±¨Êı¾İ¼°Ö»ÉÏ±¨Êı¾İÊ¾Àı,´¦ÀíÍê³ÉºóÉ¾³ı¸ÃĞĞ"
+  //´Ë´úÂëÎªÆ½Ì¨×Ô¶¯Éú³É£¬Çë°´ÕÕÊµ¼ÊÊı¾İĞŞ¸ÄÃ¿¸ö¿ÉÏÂ·¢¿ÉÉÏ±¨º¯ÊıºÍÖ»ÉÏ±¨º¯Êı 
+  mcu_dp_bool_update(DPID_SWITCH,FlashBuffer.power_switch); //BOOLĞÍÊı¾İÉÏ±¨;
+  mcu_dp_enum_update(DPID_MODE,FlashBuffer.work_mode); //Ã¶¾ÙĞÍÊı¾İÉÏ±¨;
+  mcu_dp_enum_update(DPID_SPEED,FlashBuffer.fan_speed); //Ã¶¾ÙĞÍÊı¾İÉÏ±¨;
+  mcu_dp_value_update(DPID_PM25,FlashBuffer.pm_25); //VALUEĞÍÊı¾İÉÏ±¨;
+  mcu_dp_value_update(DPID_FILTER,FlashBuffer.filter); //VALUEĞÍÊı¾İÉÏ±¨;
+  mcu_dp_bool_update(DPID_LOCK,FlashBuffer.lock); //BOOLĞÍÊı¾İÉÏ±¨;
+  mcu_dp_value_update(DPID_TEMP,FlashBuffer.temper); //VALUEĞÍÊı¾İÉÏ±¨;
+  mcu_dp_value_update(DPID_HUMIDITY,FlashBuffer.humidity); //VALUEĞÍÊı¾İÉÏ±¨;
+  mcu_dp_value_update(DPID_TVOC,FlashBuffer.tvoc); //VALUEĞÍÊı¾İÉÏ±¨;
+  mcu_dp_value_update(DPID_TOTALTIME,FlashBuffer.run_time); //VALUEĞÍÊı¾İÉÏ±¨;
+  mcu_dp_fault_update(DPID_FAULT,FlashBuffer.falut); //¹ÊÕÏĞÍÊı¾İÉÏ±¨;
 }
 
 
 /******************************************************************************
                                 WARNING!!!    
-                            2:æ‰€æœ‰æ•°æ®ä¸ŠæŠ¥å¤„ç†
-è‡ªåŠ¨åŒ–ä»£ç æ¨¡æ¿å‡½æ•°,å…·ä½“è¯·ç”¨æˆ·è‡ªè¡Œå®ç°æ•°æ®å¤„ç†
-******************************************************************************/
-/*****************************************************************************
-å‡½æ•°åç§° : dp_download_temp_sampling_handle
-åŠŸèƒ½æè¿° : é’ˆå¯¹DPID_TEMP_SAMPLINGçš„å¤„ç†å‡½æ•°
-è¾“å…¥å‚æ•° : value:æ•°æ®æºæ•°æ®
-        : length:æ•°æ®é•¿åº¦
-è¿”å›å‚æ•° : æˆåŠŸè¿”å›:SUCCESS/å¤±è´¥è¿”å›:ERROR
-ä½¿ç”¨è¯´æ˜ : å¯ä¸‹å‘å¯ä¸ŠæŠ¥ç±»å‹,éœ€è¦åœ¨å¤„ç†å®Œæ•°æ®åä¸ŠæŠ¥å¤„ç†ç»“æœè‡³app
-*****************************************************************************/
-static unsigned char dp_download_temp_sampling_handle(const unsigned char value[], unsigned short length)
-{
-    //ç¤ºä¾‹:å½“å‰DPç±»å‹ä¸ºVALUE
-    unsigned char ret;
-    unsigned long temp_sampling;
-    
-    temp_sampling = mcu_get_dp_download_value(value,length);
-    /*
-    //VALUEç±»å‹æ•°æ®å¤„ç†
-    
-    */
-    FlashBuffer.SAMPLING = temp_sampling;
-    //å¤„ç†å®ŒDPæ•°æ®ååº”æœ‰åé¦ˆ
-    ret = mcu_dp_value_update(DPID_TEMP_SAMPLING,temp_sampling);
-    if(ret == SUCCESS)
-        return SUCCESS;
-    else
-        return ERROR;
-}
-/*****************************************************************************
-å‡½æ•°åç§° : dp_download_humidity_sampling_handle
-åŠŸèƒ½æè¿° : é’ˆå¯¹DPID_HUMIDITY_SAMPLINGçš„å¤„ç†å‡½æ•°
-è¾“å…¥å‚æ•° : value:æ•°æ®æºæ•°æ®
-        : length:æ•°æ®é•¿åº¦
-è¿”å›å‚æ•° : æˆåŠŸè¿”å›:SUCCESS/å¤±è´¥è¿”å›:ERROR
-ä½¿ç”¨è¯´æ˜ : å¯ä¸‹å‘å¯ä¸ŠæŠ¥ç±»å‹,éœ€è¦åœ¨å¤„ç†å®Œæ•°æ®åä¸ŠæŠ¥å¤„ç†ç»“æœè‡³app
-*****************************************************************************/
-static unsigned char dp_download_humidity_sampling_handle(const unsigned char value[], unsigned short length)
-{
-    //ç¤ºä¾‹:å½“å‰DPç±»å‹ä¸ºVALUE
-    unsigned char ret;
-    unsigned long humidity_sampling;
-    
-    humidity_sampling = mcu_get_dp_download_value(value,length);
-    /*
-    //VALUEç±»å‹æ•°æ®å¤„ç†
-    
-    */
-    FlashBuffer.SAMPLING = humidity_sampling;
-    //å¤„ç†å®ŒDPæ•°æ®ååº”æœ‰åé¦ˆ
-    ret = mcu_dp_value_update(DPID_HUMIDITY_SAMPLING,humidity_sampling);
-    if(ret == SUCCESS)
-        return SUCCESS;
-    else
-        return ERROR;
-}
-
-
-
-
-/******************************************************************************
-                                WARNING!!!                     
-æ­¤éƒ¨åˆ†å‡½æ•°ç”¨æˆ·è¯·å‹¿ä¿®æ”¹!!
+                            2:ËùÓĞÊı¾İÉÏ±¨´¦Àí
+×Ô¶¯»¯´úÂëÄ£°åº¯Êı,¾ßÌåÇëÓÃ»§×ÔĞĞÊµÏÖÊı¾İ´¦Àí
 ******************************************************************************/
 
-/**
- * @brief  dpä¸‹å‘å¤„ç†å‡½æ•°
- * @param[in] {dpid} dpid åºå·
- * @param[in] {value} dpæ•°æ®ç¼“å†²åŒºåœ°å€
- * @param[in] {length} dpæ•°æ®é•¿åº¦
- * @return dpå¤„ç†ç»“æœ
- * -           0(ERROR): å¤±è´¥
- * -           1(SUCCESS): æˆåŠŸ
- * @note   è¯¥å‡½æ•°ç”¨æˆ·ä¸èƒ½ä¿®æ”¹
- */
-unsigned char dp_download_handle(unsigned char dpid,const unsigned char value[], unsigned short length)
-{
-    /*********************************
-    å½“å‰å‡½æ•°å¤„ç†å¯ä¸‹å‘/å¯ä¸ŠæŠ¥æ•°æ®è°ƒç”¨                    
-    å…·ä½“å‡½æ•°å†…éœ€è¦å®ç°ä¸‹å‘æ•°æ®å¤„ç†
-    å®Œæˆç”¨éœ€è¦å°†å¤„ç†ç»“æœåé¦ˆè‡³APPç«¯,å¦åˆ™APPä¼šè®¤ä¸ºä¸‹å‘å¤±è´¥
-    ***********************************/
-    unsigned char ret;
-    switch(dpid) {
-        case DPID_TEMP_SAMPLING:
-            //æ¸©åº¦é‡‡æ ·æ—¶é—´è®¾ç½®å¤„ç†å‡½æ•°
-            ret = dp_download_temp_sampling_handle(value,length);
-        break;
-        case DPID_HUMIDITY_SAMPLING:
-            //æ¹¿åº¦é‡‡æ ·æ—¶é—´è®¾ç½®å¤„ç†å‡½æ•°
-            ret = dp_download_humidity_sampling_handle(value,length);
-        break;
 
+/*****************************************************************************
+º¯ÊıÃû³Æ : dp_download_switch_handle
+¹¦ÄÜÃèÊö : Õë¶ÔDPID_SWITCHµÄ´¦Àíº¯Êı
+ÊäÈë²ÎÊı : value:Êı¾İÔ´Êı¾İ
+        : length:Êı¾İ³¤¶È
+·µ»Ø²ÎÊı : ³É¹¦·µ»Ø:SUCCESS/Ê§°Ü·µ»Ø:ERROR
+Ê¹ÓÃËµÃ÷ : ¿ÉÏÂ·¢¿ÉÉÏ±¨ÀàĞÍ,ĞèÒªÔÚ´¦ÀíÍêÊı¾İºóÉÏ±¨´¦Àí½á¹ûÖÁapp
+*****************************************************************************/
+static unsigned char dp_download_switch_handle(const unsigned char value[], unsigned short length)
+{
+  //Ê¾Àı:µ±Ç°DPÀàĞÍÎªBOOL
+  unsigned char ret;
+  //0:¹Ø/1:¿ª
+  unsigned char power_switch;
+  
+  power_switch = mcu_get_dp_download_bool(value,length);
+  if(power_switch == 0)
+  {
+    //¿ª¹Ø¹Ø
+    LED_RGB_Control(0,0,0);
+//    LED_Control(LED2,0);
         
-        default:
-        break;
-    }
-    return ret;
-}
-
-/**
- * @brief  è·å–æ‰€æœ‰dpå‘½ä»¤æ€»å’Œ
- * @param[in] Null
- * @return ä¸‹å‘å‘½ä»¤æ€»å’Œ
- * @note   è¯¥å‡½æ•°ç”¨æˆ·ä¸èƒ½ä¿®æ”¹
- */
-unsigned char get_download_cmd_total(void)
-{
-    return(sizeof(download_cmd) / sizeof(download_cmd[0]));
-}
-
-
-/******************************************************************************
-                                WARNING!!!                     
-æ­¤ä»£ç ä¸ºSDKå†…éƒ¨è°ƒç”¨,è¯·æŒ‰ç…§å®é™…dpæ•°æ®å®ç°å‡½æ•°å†…éƒ¨æ•°æ®
-******************************************************************************/
-
-#ifdef SUPPORT_MCU_FIRM_UPDATE
-/**
- * @brief  å‡çº§åŒ…å¤§å°é€‰æ‹©
- * @param[in] {package_sz} å‡çº§åŒ…å¤§å°
- * @ref           0x00: 256byte (é»˜è®¤)
- * @ref           0x01: 512byte
- * @ref           0x02: 1024byte
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void upgrade_package_choose(unsigned char package_sz)
-{
-    #error "è¯·è‡ªè¡Œå®ç°è¯·è‡ªè¡Œå®ç°å‡çº§åŒ…å¤§å°é€‰æ‹©ä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    unsigned short send_len = 0;
-    send_len = set_wifi_uart_byte(send_len, package_sz);
-    wifi_uart_write_frame(UPDATE_START_CMD, MCU_TX_VER, send_len);
-}
-
-/**
- * @brief  MCUè¿›å…¥å›ºä»¶å‡çº§æ¨¡å¼
- * @param[in] {value} å›ºä»¶ç¼“å†²åŒº
- * @param[in] {position} å½“å‰æ•°æ®åŒ…åœ¨äºå›ºä»¶ä½ç½®
- * @param[in] {length} å½“å‰å›ºä»¶åŒ…é•¿åº¦(å›ºä»¶åŒ…é•¿åº¦ä¸º0æ—¶,è¡¨ç¤ºå›ºä»¶åŒ…å‘é€å®Œæˆ)
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-unsigned char mcu_firm_update_handle(const unsigned char value[],unsigned long position,unsigned short length)
-{
-    #error "è¯·è‡ªè¡Œå®ŒæˆMCUå›ºä»¶å‡çº§ä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    if(length == 0) {
-        //å›ºä»¶æ•°æ®å‘é€å®Œæˆ
-      
-    }else {
-        //å›ºä»¶æ•°æ®å¤„ç†
-      
-    }
-    
+		//¹Ø¼ÌµçÆ÷
+		relay_off();
+		
+    //±£´æÔËĞĞÊ±¼ä
+    Earse_Flash(PARA_ADDR);
+    if(Write_Flash(PARA_ADDR,(unsigned char *)&FlashBuffer,sizeof(FlashBuffer)) == ERROR)
+    {
+      return ERROR;
+    }  
+  }
+  else
+  {
+    //¿ª¹Ø¿ª
+    LED_RGB_Control(255,FlashBuffer.fan_speed * 95,FlashBuffer.work_mode * 42);
+//    LED_Control(LED2,FlashBuffer.lock);
+		
+		//¿ª¼ÌµçÆ÷
+		relay_on();
+  }
+  
+  FlashBuffer.power_switch = power_switch;
+  
+  //´¦ÀíÍêDPÊı¾İºóÓ¦ÓĞ·´À¡
+  ret = mcu_dp_bool_update(DPID_SWITCH,power_switch);
+  if(ret == SUCCESS)
     return SUCCESS;
+  else
+    return ERROR;
 }
-#endif
-
-#ifdef SUPPORT_GREEN_TIME
-/**
- * @brief  è·å–åˆ°çš„æ ¼æ—æ—¶é—´
- * @param[in] {time} è·å–åˆ°çš„æ ¼æ—æ—¶é—´æ•°æ®
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void mcu_get_greentime(unsigned char time[])
+/*****************************************************************************
+º¯ÊıÃû³Æ : dp_download_mode_handle
+¹¦ÄÜÃèÊö : Õë¶ÔDPID_MODEµÄ´¦Àíº¯Êı
+ÊäÈë²ÎÊı : value:Êı¾İÔ´Êı¾İ
+        : length:Êı¾İ³¤¶È
+·µ»Ø²ÎÊı : ³É¹¦·µ»Ø:SUCCESS/Ê§°Ü·µ»Ø:ERROR
+Ê¹ÓÃËµÃ÷ : ¿ÉÏÂ·¢¿ÉÉÏ±¨ÀàĞÍ,ĞèÒªÔÚ´¦ÀíÍêÊı¾İºóÉÏ±¨´¦Àí½á¹ûÖÁapp
+*****************************************************************************/
+static unsigned char dp_download_mode_handle(const unsigned char value[], unsigned short length)
 {
-    #error "è¯·è‡ªè¡Œå®Œæˆç›¸å…³ä»£ç ,å¹¶åˆ é™¤è¯¥è¡Œ"
-    /*
-    time[0] ä¸ºæ˜¯å¦è·å–æ—¶é—´æˆåŠŸæ ‡å¿—ï¼Œä¸º 0 è¡¨ç¤ºå¤±è´¥ï¼Œä¸º 1è¡¨ç¤ºæˆåŠŸ
-    time[1] ä¸ºå¹´ä»½ï¼Œ0x00 è¡¨ç¤º 2000 å¹´
-    time[2] ä¸ºæœˆä»½ï¼Œä» 1 å¼€å§‹åˆ°12 ç»“æŸ
-    time[3] ä¸ºæ—¥æœŸï¼Œä» 1 å¼€å§‹åˆ°31 ç»“æŸ
-    time[4] ä¸ºæ—¶é’Ÿï¼Œä» 0 å¼€å§‹åˆ°23 ç»“æŸ
-    time[5] ä¸ºåˆ†é’Ÿï¼Œä» 0 å¼€å§‹åˆ°59 ç»“æŸ
-    time[6] ä¸ºç§’é’Ÿï¼Œä» 0 å¼€å§‹åˆ°59 ç»“æŸ
-    */
-    if(time[0] == 1) {
-        //æ­£ç¡®æ¥æ”¶åˆ°wifiæ¨¡å—è¿”å›çš„æ ¼æ—æ•°æ®
-        
-    }else {
-        //è·å–æ ¼æ—æ—¶é—´å‡ºé”™,æœ‰å¯èƒ½æ˜¯å½“å‰wifiæ¨¡å—æœªè”ç½‘
-    }
+  //Ê¾Àı:µ±Ç°DPÀàĞÍÎªENUM
+  unsigned char ret;
+  unsigned char mode;
+  
+  mode = mcu_get_dp_download_enum(value,length);
+  switch(mode)
+  {
+    case 0:
+      
+      break;
+      
+    case 1:
+      
+      break;
+      
+    case 2:
+      
+      break;
+      
+    case 3:
+      
+      break;
+      
+    case 4:
+      
+      break;
+      
+    case 5:
+      
+      break;
+      
+    case 6:
+      
+      break;
+      
+    default:
+      
+      break;
+  }
+    
+  FlashBuffer.work_mode = mode;
+ 
+  LED_RGB_Control(255,FlashBuffer.fan_speed * 95,FlashBuffer.work_mode * 42);
+  
+  Earse_Flash(PARA_ADDR);
+  if(Write_Flash(PARA_ADDR,(unsigned char *)&FlashBuffer,sizeof(FlashBuffer)) == ERROR)
+  {
+    return ERROR;
+  }    
+  //´¦ÀíÍêDPÊı¾İºóÓ¦ÓĞ·´À¡
+  ret = mcu_dp_enum_update(DPID_MODE,mode);
+  if(ret == SUCCESS)
+    return SUCCESS;
+  else
+    return ERROR;
 }
-#endif
+/*****************************************************************************
+º¯ÊıÃû³Æ : dp_download_speed_handle
+¹¦ÄÜÃèÊö : Õë¶ÔDPID_SPEEDµÄ´¦Àíº¯Êı
+ÊäÈë²ÎÊı : value:Êı¾İÔ´Êı¾İ
+        : length:Êı¾İ³¤¶È
+·µ»Ø²ÎÊı : ³É¹¦·µ»Ø:SUCCESS/Ê§°Ü·µ»Ø:ERROR
+Ê¹ÓÃËµÃ÷ : ¿ÉÏÂ·¢¿ÉÉÏ±¨ÀàĞÍ,ĞèÒªÔÚ´¦ÀíÍêÊı¾İºóÉÏ±¨´¦Àí½á¹ûÖÁapp
+*****************************************************************************/
+static unsigned char dp_download_speed_handle(const unsigned char value[], unsigned short length)
+{
+  //Ê¾Àı:µ±Ç°DPÀàĞÍÎªENUM
+  unsigned char ret;
+  unsigned char speed;
+  
+  speed = mcu_get_dp_download_enum(value,length);
+  switch(speed)
+  {
+    case 0:
+      
+      break;
+      
+    case 1:
+      
+      break;
+      
+    case 2:
+      
+      break;
+      
+    case 3:
+      
+      break;
+      
+    case 4:
+      
+      break;
+      
+    default:
+      
+      break;
+  }
+  
+  FlashBuffer.fan_speed = speed;
+  LED_RGB_Control(255,FlashBuffer.fan_speed * 95,FlashBuffer.work_mode * 42);
+  
+  Earse_Flash(PARA_ADDR);
+  if(Write_Flash(PARA_ADDR,(unsigned char *)&FlashBuffer,sizeof(FlashBuffer)) == ERROR)
+  {
+    return ERROR;
+  }    
+  
+  //´¦ÀíÍêDPÊı¾İºóÓ¦ÓĞ·´À¡
+  ret = mcu_dp_enum_update(DPID_SPEED,speed);
+  if(ret == SUCCESS)
+    return SUCCESS;
+  else
+    return ERROR;
+}
+/*****************************************************************************
+º¯ÊıÃû³Æ : dp_download_lock_handle
+¹¦ÄÜÃèÊö : Õë¶ÔDPID_LOCKµÄ´¦Àíº¯Êı
+ÊäÈë²ÎÊı : value:Êı¾İÔ´Êı¾İ
+        : length:Êı¾İ³¤¶È
+·µ»Ø²ÎÊı : ³É¹¦·µ»Ø:SUCCESS/Ê§°Ü·µ»Ø:ERROR
+Ê¹ÓÃËµÃ÷ : ¿ÉÏÂ·¢¿ÉÉÏ±¨ÀàĞÍ,ĞèÒªÔÚ´¦ÀíÍêÊı¾İºóÉÏ±¨´¦Àí½á¹ûÖÁapp
+*****************************************************************************/
+static unsigned char dp_download_lock_handle(const unsigned char value[], unsigned short length)
+{
+  //Ê¾Àı:µ±Ç°DPÀàĞÍÎªBOOL
+  unsigned char ret;
+  //0:¹Ø/1:¿ª
+  unsigned char lock;
+  
+  lock = mcu_get_dp_download_bool(value,length);
+  if(lock == 0)
+  {
+    //¿ª¹Ø¹Ø
+//    LED_Control(LED2,0);
+  }
+  else
+  {
+    //¿ª¹Ø¿ª
+//    LED_Control(LED2,1);
+  }
+  
+  Earse_Flash(PARA_ADDR);
+  FlashBuffer.lock = lock;
+  
+  if(Write_Flash(PARA_ADDR,(unsigned char *)&FlashBuffer,sizeof(FlashBuffer)) == ERROR)
+  {
+    return ERROR;
+  }   
+  
+  //´¦ÀíÍêDPÊı¾İºóÓ¦ÓĞ·´À¡
+  ret = mcu_dp_bool_update(DPID_LOCK,lock);
+  if(ret == SUCCESS)
+    return SUCCESS;
+  else
+    return ERROR;
+}
 
+
+/******************************************************************************
+                                WARNING!!!                     
+´Ë´úÂëÎªSDKÄÚ²¿µ÷ÓÃ,Çë°´ÕÕÊµ¼ÊdpÊı¾İÊµÏÖº¯ÊıÄÚ²¿Êı¾İ
+******************************************************************************/
 #ifdef SUPPORT_MCU_RTC_CHECK
-/**
- * @brief  MCUæ ¡å¯¹æœ¬åœ°RTCæ—¶é’Ÿ
- * @param[in] {time} è·å–åˆ°çš„æ ¼æ—æ—¶é—´æ•°æ®
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
+/*****************************************************************************
+º¯ÊıÃû³Æ : mcu_write_rtctime
+¹¦ÄÜÃèÊö : MCUĞ£¶Ô±¾µØRTCÊ±ÖÓ
+ÊäÈë²ÎÊı : ÎŞ
+·µ»Ø²ÎÊı : ÎŞ
+Ê¹ÓÃËµÃ÷ : MCUĞèÒª×ÔĞĞÊµÏÖ¸Ã¹¦ÄÜ
+*****************************************************************************/
 void mcu_write_rtctime(unsigned char time[])
 {
-    //#error "è¯·è‡ªè¡Œå®ŒæˆRTCæ—¶é’Ÿå†™å…¥ä»£ç ,å¹¶åˆ é™¤è¯¥è¡Œ"
-    /*
-    Time[0] ä¸ºæ˜¯å¦è·å–æ—¶é—´æˆåŠŸæ ‡å¿—ï¼Œä¸º 0 è¡¨ç¤ºå¤±è´¥ï¼Œä¸º 1è¡¨ç¤ºæˆåŠŸ
-    Time[1] ä¸ºå¹´ä»½ï¼Œ0x00 è¡¨ç¤º 2000 å¹´
-    Time[2] ä¸ºæœˆä»½ï¼Œä» 1 å¼€å§‹åˆ°12 ç»“æŸ
-    Time[3] ä¸ºæ—¥æœŸï¼Œä» 1 å¼€å§‹åˆ°31 ç»“æŸ
-    Time[4] ä¸ºæ—¶é’Ÿï¼Œä» 0 å¼€å§‹åˆ°23 ç»“æŸ
-    Time[5] ä¸ºåˆ†é’Ÿï¼Œä» 0 å¼€å§‹åˆ°59 ç»“æŸ
-    Time[6] ä¸ºç§’é’Ÿï¼Œä» 0 å¼€å§‹åˆ°59 ç»“æŸ
-    Time[7] ä¸ºæ˜ŸæœŸï¼Œä» 1 å¼€å§‹åˆ° 7 ç»“æŸï¼Œ1ä»£è¡¨æ˜ŸæœŸä¸€
-   */
-    if(time[0] == 1) {
-        //æ­£ç¡®æ¥æ”¶åˆ°wifiæ¨¡å—è¿”å›çš„æœ¬åœ°æ—¶é’Ÿæ•°æ®
-			OLED_ShowNum(40,0,time[4],2,8);
-			OLED_ShowChar(52,0,':',8);
-			OLED_ShowNum(58,0,time[5],2,8);
-			OLED_ShowChar(70,0,':',8);
-			OLED_ShowNum(76,0,time[6],2,8);
-     
-    }else {
-        //è·å–æœ¬åœ°æ—¶é’Ÿæ•°æ®å‡ºé”™,æœ‰å¯èƒ½æ˜¯å½“å‰wifiæ¨¡å—æœªè”ç½‘
-    }
+//  #error "Çë×ÔĞĞÍê³ÉRTCÊ±ÖÓĞ´Èë´úÂë,²¢É¾³ı¸ÃĞĞ"
+  /*
+  time[0]ÎªÊÇ·ñ»ñÈ¡Ê±¼ä³É¹¦±êÖ¾£¬Îª 0 ±íÊ¾Ê§°Ü£¬Îª 1±íÊ¾³É¹¦
+  time[1] Îª Äê ·İ , 0x00 ±í Ê¾2000 Äê
+  time[2]ÎªÔÂ·İ£¬´Ó 1 ¿ªÊ¼µ½12 ½áÊø
+  time[3]ÎªÈÕÆÚ£¬´Ó 1 ¿ªÊ¼µ½31 ½áÊø
+  time[4]ÎªÊ±ÖÓ£¬´Ó 0 ¿ªÊ¼µ½23 ½áÊø
+  time[5]Îª·ÖÖÓ£¬´Ó 0 ¿ªÊ¼µ½59 ½áÊø
+  time[6]ÎªÃëÖÓ£¬´Ó 0 ¿ªÊ¼µ½59 ½áÊø
+  time[7]ÎªĞÇÆÚ£¬´Ó 1 ¿ªÊ¼µ½ 7 ½áÊø£¬1´ú±íĞÇÆÚÒ»
+ */
+  if(time[0] == 1)
+  {
+    //ÕıÈ·½ÓÊÕµ½wifiÄ£¿é·µ»ØµÄ±¾µØÊ±ÖÓÊı¾İ 
+	 
+  }
+  else
+  {
+  	//»ñÈ¡±¾µØÊ±ÖÓÊı¾İ³ö´í,ÓĞ¿ÉÄÜÊÇµ±Ç°wifiÄ£¿éÎ´ÁªÍø
+  }
 }
 #endif
 
 #ifdef WIFI_TEST_ENABLE
-/**
- * @brief  wifiåŠŸèƒ½æµ‹è¯•åé¦ˆ
- * @param[in] {result} wifiåŠŸèƒ½æµ‹è¯•ç»“æœ
- * @ref       0: å¤±è´¥
- * @ref       1: æˆåŠŸ
- * @param[in] {rssi} æµ‹è¯•æˆåŠŸè¡¨ç¤ºwifiä¿¡å·å¼ºåº¦/æµ‹è¯•å¤±è´¥è¡¨ç¤ºé”™è¯¯ç±»å‹
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
+/*****************************************************************************
+º¯ÊıÃû³Æ : wifi_test_result
+¹¦ÄÜÃèÊö : wifi¹¦ÄÜ²âÊÔ·´À¡
+ÊäÈë²ÎÊı : result:wifi¹¦ÄÜ²âÊÔ½á¹û;0:Ê§°Ü/1:³É¹¦
+           rssi:²âÊÔ³É¹¦±íÊ¾wifiĞÅºÅÇ¿¶È/²âÊÔÊ§°Ü±íÊ¾´íÎóÀàĞÍ
+·µ»Ø²ÎÊı : ÎŞ
+Ê¹ÓÃËµÃ÷ : MCUĞèÒª×ÔĞĞÊµÏÖ¸Ã¹¦ÄÜ
+*****************************************************************************/
 void wifi_test_result(unsigned char result,unsigned char rssi)
 {
-    //#error "è¯·è‡ªè¡Œå®ç°wifiåŠŸèƒ½æµ‹è¯•æˆåŠŸ/å¤±è´¥ä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    if(result == 0) {
-        //æµ‹è¯•å¤±è´¥
-        if(rssi == 0x00) {
-            //æœªæ‰«æåˆ°åç§°ä¸ºtuya_mdev_testè·¯ç”±å™¨,è¯·æ£€æŸ¥
-        }else if(rssi == 0x01) {
-            //æ¨¡å—æœªæˆæƒ
-        }
-    }else {
-        //æµ‹è¯•æˆåŠŸ
-        //rssiä¸ºä¿¡å·å¼ºåº¦(0-100, 0ä¿¡å·æœ€å·®ï¼Œ100ä¿¡å·æœ€å¼º)
-    }
-}
-#endif
+//  #error "Çë×ÔĞĞÊµÏÖwifi¹¦ÄÜ²âÊÔ³É¹¦/Ê§°Ü´úÂë,Íê³ÉºóÇëÉ¾³ı¸ÃĞĞ"
+  extern unsigned char wifi_test_mode;                                                  //²ú²âÄ£Ê½
 
-#ifdef WEATHER_ENABLE
-/**
-* @brief  mcuæ‰“å¼€å¤©æ°”æœåŠ¡
- * @param  Null
- * @return Null
- */
-void mcu_open_weather(void)
-{
-    int i = 0;
-    char buffer[13] = {0};
-    unsigned char weather_len = 0;
-    unsigned short send_len = 0;
-    
-    weather_len = sizeof(weather_choose) / sizeof(weather_choose[0]);
-      
-    for(i=0;i<weather_len;i++) {
-        buffer[0] = sprintf(buffer+1,"w.%s",weather_choose[i]);
-        send_len = set_wifi_uart_buffer(send_len, (unsigned char *)buffer, buffer[0]+1);
+  if(result == 0)
+  {
+    //²âÊÔÊ§°Ü
+    if(rssi == 0x00)
+    {
+      //Î´É¨Ãèµ½Ãû³ÆÎªtuya_mdev_testÂ·ÓÉÆ÷,Çë¼ì²é
+      LED_RGB_Control(255,0,0);
     }
-    
-    #error "è¯·æ ¹æ®æç¤ºï¼Œè‡ªè¡Œå®Œå–„æ‰“å¼€å¤©æ°”æœåŠ¡ä»£ç ï¼Œå®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    /*
-    //å½“è·å–çš„å‚æ•°æœ‰å’Œæ—¶é—´æœ‰å…³çš„å‚æ•°æ—¶(å¦‚:æ—¥å‡ºæ—¥è½)ï¼Œéœ€è¦æ­é…t.unixæˆ–è€…t.localä½¿ç”¨ï¼Œéœ€è¦è·å–çš„å‚æ•°æ•°æ®æ˜¯æŒ‰ç…§æ ¼æ—æ—¶é—´è¿˜æ˜¯æœ¬åœ°æ—¶é—´
-    buffer[0] = sprintf(buffer+1,"t.unix"); //æ ¼æ—æ—¶é—´   æˆ–ä½¿ç”¨  buffer[0] = sprintf(buffer+1,"t.local"); //æœ¬åœ°æ—¶é—´
-    send_len = set_wifi_uart_buffer(send_len, (unsigned char *)buffer, buffer[0]+1);
-    */
-    
-    buffer[0] = sprintf(buffer+1,"w.date.%d",WEATHER_FORECAST_DAYS_NUM);
-    send_len = set_wifi_uart_buffer(send_len, (unsigned char *)buffer, buffer[0]+1);
-    
-    wifi_uart_write_frame(WEATHER_OPEN_CMD, MCU_TX_VER, send_len);
-}
-
-/**
- * @brief  æ‰“å¼€å¤©æ°”åŠŸèƒ½è¿”å›ç”¨æˆ·è‡ªå¤„ç†å‡½æ•°
- * @param[in] {res} æ‰“å¼€å¤©æ°”åŠŸèƒ½è¿”å›ç»“æœ
- * @ref       0: å¤±è´¥
- * @ref       1: æˆåŠŸ
- * @param[in] {err} é”™è¯¯ç 
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void weather_open_return_handle(unsigned char res, unsigned char err)
-{
-    #error "è¯·è‡ªè¡Œå®Œæˆæ‰“å¼€å¤©æ°”åŠŸèƒ½è¿”å›æ•°æ®å¤„ç†ä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    unsigned char err_num = 0;
-    
-    if(res == 1) {
-        //æ‰“å¼€å¤©æ°”è¿”å›æˆåŠŸ
-    }else if(res == 0) {
-        //æ‰“å¼€å¤©æ°”è¿”å›å¤±è´¥
-        //è·å–é”™è¯¯ç 
-        err_num = err; 
+    else if(rssi == 0x01)
+    {
+      //Ä£¿éÎ´ÊÚÈ¨
+      LED_RGB_Control(0,0,255);
     }
-}
-
-/**
- * @brief  å¤©æ°”æ•°æ®ç”¨æˆ·è‡ªå¤„ç†å‡½æ•°
- * @param[in] {name} å‚æ•°å
- * @param[in] {type} å‚æ•°ç±»å‹
- * @ref       0: int å‹
- * @ref       1: string å‹
- * @param[in] {data} å‚æ•°å€¼çš„åœ°å€
- * @param[in] {day} å“ªä¸€å¤©çš„å¤©æ°”  0:è¡¨ç¤ºå½“å¤© å–å€¼èŒƒå›´: 0~6
- * @ref       0: ä»Šå¤©
- * @ref       1: æ˜å¤©
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void weather_data_user_handle(char *name, unsigned char type, const unsigned char *data, char day)
-{
-    #error "è¿™é‡Œä»…ç»™å‡ºç¤ºä¾‹ï¼Œè¯·è‡ªè¡Œå®Œå–„å¤©æ°”æ•°æ®å¤„ç†ä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    int value_int;
-    char value_string[50];//ç”±äºæœ‰çš„å‚æ•°å†…å®¹è¾ƒå¤šï¼Œè¿™é‡Œé»˜è®¤ä¸º50ã€‚æ‚¨å¯ä»¥æ ¹æ®å®šä¹‰çš„å‚æ•°ï¼Œå¯ä»¥é€‚å½“å‡å°‘è¯¥å€¼
-    
-    my_memset(value_string, '\0', 50);
-    
-    //é¦–å…ˆè·å–æ•°æ®ç±»å‹
-    if(type == 0) { //å‚æ•°æ˜¯INTå‹
-        value_int = data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3];
-    }else if(type == 1) {
-        my_strcpy(value_string, data);
-    }
-    
-    //æ³¨æ„è¦æ ¹æ®æ‰€é€‰å‚æ•°ç±»å‹æ¥è·å¾—å‚æ•°å€¼ï¼ï¼ï¼
-    if(my_strcmp(name, "temp") == 0) {
-        printf("day:%d temp value is:%d\r\n", day, value_int);          //int å‹
-    }else if(my_strcmp(name, "humidity") == 0) {
-        printf("day:%d humidity value is:%d\r\n", day, value_int);      //int å‹
-    }else if(my_strcmp(name, "pm25") == 0) {
-        printf("day:%d pm25 value is:%d\r\n", day, value_int);          //int å‹
-    }else if(my_strcmp(name, "condition") == 0) {
-        printf("day:%d condition value is:%s\r\n", day, value_string);  //string å‹
-    }
-}
-#endif
-
-#ifdef MCU_DP_UPLOAD_SYN
-/**
- * @brief  çŠ¶æ€åŒæ­¥ä¸ŠæŠ¥ç»“æœ
- * @param[in] {result} ç»“æœ
- * @ref       0: å¤±è´¥
- * @ref       1: æˆåŠŸ
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void get_upload_syn_result(unsigned char result)
-{
-    #error "è¯·è‡ªè¡Œå®ŒæˆçŠ¶æ€åŒæ­¥ä¸ŠæŠ¥ç»“æœä»£ç ,å¹¶åˆ é™¤è¯¥è¡Œ"
-      
-    if(result == 0) {
-        //åŒæ­¥ä¸ŠæŠ¥å‡ºé”™
-    }else {
-        //åŒæ­¥ä¸ŠæŠ¥æˆåŠŸ
-    }
-}
-#endif
-
-#ifdef GET_WIFI_STATUS_ENABLE
-/**
- * @brief  è·å– WIFI çŠ¶æ€ç»“æœ
- * @param[in] {result} æŒ‡ç¤º WIFI å·¥ä½œçŠ¶æ€
- * @ref       0x00: wifiçŠ¶æ€ 1 smartconfig é…ç½®çŠ¶æ€
- * @ref       0x01: wifiçŠ¶æ€ 2 AP é…ç½®çŠ¶æ€
- * @ref       0x02: wifiçŠ¶æ€ 3 WIFI å·²é…ç½®ä½†æœªè¿ä¸Šè·¯ç”±å™¨
- * @ref       0x03: wifiçŠ¶æ€ 4 WIFI å·²é…ç½®ä¸”è¿ä¸Šè·¯ç”±å™¨
- * @ref       0x04: wifiçŠ¶æ€ 5 å·²è¿ä¸Šè·¯ç”±å™¨ä¸”è¿æ¥åˆ°äº‘ç«¯
- * @ref       0x05: wifiçŠ¶æ€ 6 WIFI è®¾å¤‡å¤„äºä½åŠŸè€—æ¨¡å¼
- * @ref       0x06: wifiçŠ¶æ€ 7 WIFI è®¾å¤‡å¤„äºsmartconfig&APé…ç½®çŠ¶æ€
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void get_wifi_status(unsigned char result)
-{
-  #error "è¯·è‡ªè¡Œå®Œæˆè·å– WIFI çŠ¶æ€ç»“æœä»£ç ,å¹¶åˆ é™¤è¯¥è¡Œ"
- 
-    switch(result) {
-        case 0:
-            //wifiå·¥ä½œçŠ¶æ€1
-        break;
-    
-        case 1:
-            //wifiå·¥ä½œçŠ¶æ€2
-        break;
-        
-        case 2:
-            //wifiå·¥ä½œçŠ¶æ€3
-        break;
-        
-        case 3:
-            //wifiå·¥ä½œçŠ¶æ€4
-        break;
-        
-        case 4:
-            //wifiå·¥ä½œçŠ¶æ€5
-        break;
-        
-        case 5:
-            //wifiå·¥ä½œçŠ¶æ€6
-        break;
-      
-        case 6:
-            //wifiå·¥ä½œçŠ¶æ€7
-        break;
-        
-        default:break;
-    }
-}
-#endif
-
-#ifdef WIFI_STREAM_ENABLE
-/**
- * @brief  æµæœåŠ¡å‘é€ç»“æœ
- * @param[in] {result} ç»“æœ
- * @ref       0x00: æˆåŠŸ
- * @ref       0x01: æµæœåŠ¡åŠŸèƒ½æœªå¼€å¯
- * @ref       0x02: æµæœåŠ¡å™¨æœªè¿æ¥æˆåŠŸ
- * @ref       0x03: æ•°æ®æ¨é€è¶…æ—¶
- * @ref       0x04: ä¼ è¾“çš„æ•°æ®é•¿åº¦é”™è¯¯
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void stream_trans_send_result(unsigned char result)
-{
-    #error "è¿™é‡Œä»…ç»™å‡ºç¤ºä¾‹ï¼Œè¯·è‡ªè¡Œå®Œå–„æµæœåŠ¡å‘é€ç»“æœå¤„ç†ä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    switch(result) {
-        case 0x00:
-            //æˆåŠŸ
-        break;
-        
-        case 0x01:
-            //æµæœåŠ¡åŠŸèƒ½æœªå¼€å¯
-        break;
-        
-        case 0x02:
-            //æµæœåŠ¡å™¨æœªè¿æ¥æˆåŠŸ
-        break;
-        
-        case 0x03:
-            //æ•°æ®æ¨é€è¶…æ—¶
-        break;
-        
-        case 0x04:
-            //ä¼ è¾“çš„æ•°æ®é•¿åº¦é”™è¯¯
-        break;
-        
-        default:break;
-    }
-}
-
-/**
- * @brief  å¤šåœ°å›¾æµæœåŠ¡å‘é€ç»“æœ
- * @param[in] {result} ç»“æœ
- * @ref       0x00: æˆåŠŸ
- * @ref       0x01: å¤±è´¥
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void maps_stream_trans_send_result(unsigned char result)
-{
-    #error "è¿™é‡Œä»…ç»™å‡ºç¤ºä¾‹ï¼Œè¯·è‡ªè¡Œå®Œå–„å¤šåœ°å›¾æµæœåŠ¡å‘é€ç»“æœå¤„ç†ä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    switch(result) {
-        case 0x00:
-            //æˆåŠŸ
-        break;
-        
-        case 0x01:
-            //å¤±è´¥
-        break;
-        
-        default:break;
-    }
-}
-#endif
-
-#ifdef WIFI_CONNECT_TEST_ENABLE
-/**
- * @brief  è·¯ç”±ä¿¡æ¯æ¥æ”¶ç»“æœé€šçŸ¥
- * @param[in] {result} æ¨¡å—æ˜¯å¦æˆåŠŸæ¥æ”¶åˆ°æ­£ç¡®çš„è·¯ç”±ä¿¡æ¯
- * @ref       0x00: å¤±è´¥
- * @ref       0x01: æˆåŠŸ
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void wifi_connect_test_result(unsigned char result)
-{
-    #error "è¯·è‡ªè¡Œå®ç°wifiåŠŸèƒ½æµ‹è¯•æˆåŠŸ/å¤±è´¥ä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    if(result == 0) {
-        //è·¯ç”±ä¿¡æ¯æ¥æ”¶å¤±è´¥ï¼Œè¯·æ£€æŸ¥å‘å‡ºçš„è·¯ç”±ä¿¡æ¯åŒ…æ˜¯å¦æ˜¯å®Œæ•´çš„JSONæ•°æ®åŒ…
-    }else {
-        //è·¯ç”±ä¿¡æ¯æ¥æ”¶æˆåŠŸï¼Œäº§æµ‹ç»“æœè¯·æ³¨æ„WIFI_STATE_CMDæŒ‡ä»¤çš„wifiå·¥ä½œçŠ¶æ€
-    }
-}
-#endif
-
-#ifdef GET_MODULE_MAC_ENABLE
-/**
- * @brief  è·å–æ¨¡å—macç»“æœ
- * @param[in] {mac} æ¨¡å— MAC æ•°æ®
- * @ref       mac[0]: ä¸ºæ˜¯å¦è·å–macæˆåŠŸæ ‡å¿—ï¼Œ0x00 è¡¨ç¤ºæˆåŠŸï¼Œ0x01 è¡¨ç¤ºå¤±è´¥
- * @ref       mac[1]~mac[6]: å½“è·å– MACåœ°å€æ ‡å¿—ä½å¦‚æœmac[0]ä¸ºæˆåŠŸï¼Œåˆ™è¡¨ç¤ºæ¨¡å—æœ‰æ•ˆçš„MACåœ°å€
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void mcu_get_mac(unsigned char mac[])
-{
-    #error "è¯·è‡ªè¡Œå®Œæˆmacè·å–ä»£ç ,å¹¶åˆ é™¤è¯¥è¡Œ"
-    /*
-    mac[0]ä¸ºæ˜¯å¦è·å–macæˆåŠŸæ ‡å¿—ï¼Œ0x00 è¡¨ç¤ºæˆåŠŸï¼Œä¸º0x01è¡¨ç¤ºå¤±è´¥
-    mac[1]~mac[6]:å½“è·å– MACåœ°å€æ ‡å¿—ä½å¦‚æœmac[0]ä¸ºæˆåŠŸï¼Œåˆ™è¡¨ç¤ºæ¨¡å—æœ‰æ•ˆçš„MACåœ°å€
-   */
-   
-    if(mac[0] == 1) {
-        //è·å–macå‡ºé”™
-    }else {
-        //æ­£ç¡®æ¥æ”¶åˆ°wifiæ¨¡å—è¿”å›çš„macåœ°å€
-    }
-}
-#endif
-
-#ifdef GET_IR_STATUS_ENABLE
-/**
- * @brief  è·å–çº¢å¤–çŠ¶æ€ç»“æœ
- * @param[in] {result} æŒ‡ç¤ºçº¢å¤–çŠ¶æ€
- * @ref       0x00: çº¢å¤–çŠ¶æ€ 1 æ­£åœ¨å‘é€çº¢å¤–ç 
- * @ref       0x01: çº¢å¤–çŠ¶æ€ 2 å‘é€çº¢å¤–ç ç»“æŸ
- * @ref       0x02: çº¢å¤–çŠ¶æ€ 3 çº¢å¤–å­¦ä¹ å¼€å§‹
- * @ref       0x03: çº¢å¤–çŠ¶æ€ 4 çº¢å¤–å­¦ä¹ ç»“æŸ
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void get_ir_status(unsigned char result)
-{
-    #error "è¯·è‡ªè¡Œå®Œæˆçº¢å¤–çŠ¶æ€ä»£ç ,å¹¶åˆ é™¤è¯¥è¡Œ"
-    switch(result) {
-        case 0:
-            //çº¢å¤–çŠ¶æ€ 1
-        break;
-      
-        case 1:
-            //çº¢å¤–çŠ¶æ€ 2
-        break;
-          
-        case 2:
-            //çº¢å¤–çŠ¶æ€ 3
-        break;
-          
-        case 3:
-            //çº¢å¤–çŠ¶æ€ 4
-        break;
-          
-        default:break;
-    }
-    
-    wifi_uart_write_frame(GET_IR_STATUS_CMD, MCU_TX_VER, 0);
-}
-#endif
-
-#ifdef IR_TX_RX_TEST_ENABLE
-/**
- * @brief  çº¢å¤–è¿›å…¥æ”¶å‘äº§æµ‹ç»“æœé€šçŸ¥
- * @param[in] {result} æ¨¡å—æ˜¯å¦æˆåŠŸæ¥æ”¶åˆ°æ­£ç¡®çš„ä¿¡æ¯
- * @ref       0x00: å¤±è´¥
- * @ref       0x01: æˆåŠŸ
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void ir_tx_rx_test_result(unsigned char result)
-{
-    #error "è¯·è‡ªè¡Œå®ç°çº¢å¤–è¿›å…¥æ”¶å‘äº§æµ‹åŠŸèƒ½æµ‹è¯•æˆåŠŸ/å¤±è´¥ä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    if(result == 0) {
-        //çº¢å¤–è¿›å…¥æ”¶å‘äº§æµ‹æˆåŠŸ
-    }else {
-        //çº¢å¤–è¿›å…¥æ”¶å‘äº§æµ‹å¤±è´¥ï¼Œè¯·æ£€æŸ¥å‘å‡ºçš„æ•°æ®åŒ…
-    }
-}
-#endif
-
-#ifdef FILE_DOWNLOAD_ENABLE
-/**
- * @brief  æ–‡ä»¶ä¸‹è½½åŒ…å¤§å°é€‰æ‹©
- * @param[in] {package_sz} æ–‡ä»¶ä¸‹è½½åŒ…å¤§å°
- * @ref       0x00: 256 byte (é»˜è®¤)
- * @ref       0x01: 512 byte
- * @ref       0x02: 1024 byte
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void file_download_package_choose(unsigned char package_sz)
-{
-    #error "è¯·è‡ªè¡Œå®ç°è¯·è‡ªè¡Œå®ç°æ–‡ä»¶ä¸‹è½½åŒ…å¤§å°é€‰æ‹©ä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    unsigned short send_len = 0;
-    send_len = set_wifi_uart_byte(send_len, package_sz);
-    wifi_uart_write_frame(FILE_DOWNLOAD_START_CMD, MCU_TX_VER, send_len);
-}
-
-/**
- * @brief  æ–‡ä»¶åŒ…ä¸‹è½½æ¨¡å¼
- * @param[in] {value} æ•°æ®ç¼“å†²åŒº
- * @param[in] {position} å½“å‰æ•°æ®åŒ…åœ¨äºæ–‡ä»¶ä½ç½®
- * @param[in] {length} å½“å‰æ–‡ä»¶åŒ…é•¿åº¦(é•¿åº¦ä¸º0æ—¶,è¡¨ç¤ºæ–‡ä»¶åŒ…å‘é€å®Œæˆ)
- * @return æ•°æ®å¤„ç†ç»“æœ
- * -           0(ERROR): å¤±è´¥
- * -           1(SUCCESS): æˆåŠŸ
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-unsigned char file_download_handle(const unsigned char value[],unsigned long position,unsigned short length)
-{
-    #error "è¯·è‡ªè¡Œå®Œæˆæ–‡ä»¶åŒ…ä¸‹è½½ä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    if(length == 0) {
-        //æ–‡ä»¶åŒ…æ•°æ®å‘é€å®Œæˆ
-        
-    }else {
-        //æ–‡ä»¶åŒ…æ•°æ®å¤„ç†
-      
-    }
-    
-    return SUCCESS;
-}
-#endif
-
-#ifdef MODULE_EXPANDING_SERVICE_ENABLE
-/**
- * @brief  æ‰“å¼€æ¨¡å—æ—¶é—´æœåŠ¡é€šçŸ¥ç»“æœ
- * @param[in] {value} æ•°æ®ç¼“å†²åŒº
- * @param[in] {length} æ•°æ®é•¿åº¦
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void open_module_time_serve_result(const unsigned char value[], unsigned short length)
-{
-    #error "è¯·è‡ªè¡Œå®ç°æ¨¡å—æ—¶é—´æœåŠ¡é€šçŸ¥ç»“æœä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    unsigned char sub_cmd = value[0];
-    
-    switch(sub_cmd) {
-        case 0x01: { //å­å‘½ä»¤  æ‰“å¼€æ¨¡å—æ—¶é—´æœåŠ¡é€šçŸ¥
-            if(0x02 != length) {
-                //æ•°æ®é•¿åº¦é”™è¯¯
-                return;
-            }
-            
-            if(value[1] == 0) {
-                //æœåŠ¡å¼€å¯æˆåŠŸ
-            }else {
-                //æœåŠ¡å¼€å¯å¤±è´¥
-            }
-        }
-        break;
-        
-        case 0x02: {  //å­å‘½ä»¤  æ¨¡å—æ—¶é—´æœåŠ¡é€šçŸ¥
-            if(0x09 != length) {
-                //æ•°æ®é•¿åº¦é”™è¯¯
-                return;
-            }
-            
-            unsigned char time_type = value[1]; //0x00:æ ¼æ—æ—¶é—´  0x01:æœ¬åœ°æ—¶é—´
-            unsigned char time_data[7];
-            
-            my_memcpy(time_data, value + 2, length - 2);
-            /*
-            Data[0]ä¸ºå¹´ä»½, 0x00è¡¨ç¤º2000å¹´
-            Data[1]ä¸ºæœˆä»½ï¼Œä»1å¼€å§‹åˆ°12ç»“æŸ
-            Data[2]ä¸ºæ—¥æœŸï¼Œä»1å¼€å§‹åˆ°31ç»“æŸ
-            Data[3]ä¸ºæ—¶é’Ÿï¼Œä»0å¼€å§‹åˆ°23ç»“æŸ
-            Data[4]ä¸ºåˆ†é’Ÿï¼Œä»0å¼€å§‹åˆ°59ç»“æŸ
-            Data[5]ä¸ºç§’é’Ÿï¼Œä»0å¼€å§‹åˆ°15ç»“æŸ
-            Data[6]ä¸ºæ˜ŸæœŸï¼Œä»1å¼€å§‹åˆ°7ç»“æŸï¼Œ1ä»£è¡¨æ˜ŸæœŸä¸€
-            */
-            
-            //åœ¨æ­¤å¤„æ·»åŠ æ—¶é—´æ•°æ®å¤„ç†ä»£ç ï¼Œtime_typeä¸ºæ—¶é—´ç±»å‹
-            
-            unsigned short send_len = 0;
-            send_len = set_wifi_uart_byte(send_len,sub_cmd);
-            wifi_uart_write_frame(MODULE_EXTEND_FUN_CMD, MCU_TX_VER, send_len);
-        }
-        break;
-        
-        case 0x03: {  //å­å‘½ä»¤  ä¸»åŠ¨è¯·æ±‚å¤©æ°”æœåŠ¡æ•°æ®
-            if(0x02 != length) {
-                //æ•°æ®é•¿åº¦é”™è¯¯
-                return;
-            }
-            
-            if(value[1] == 0) {
-                //æˆåŠŸ
-            }else {
-                //å¤±è´¥
-            }
-        }
-        break;
-        
-        case 0x04: {  //å­å‘½ä»¤  æ‰“å¼€æ¨¡å—é‡ç½®çŠ¶æ€é€šçŸ¥
-            if(0x02 != length) {
-                //æ•°æ®é•¿åº¦é”™è¯¯
-                return;
-            }
-            
-            if(value[1] == 0) {
-                //æˆåŠŸ
-            }else {
-                //å¤±è´¥
-            }
-        }
-        break;
-        
-        case 0x05: {  //å­å‘½ä»¤  æ¨¡å—é‡ç½®çŠ¶æ€é€šçŸ¥
-            if(0x02 != length) {
-                //æ•°æ®é•¿åº¦é”™è¯¯
-                return;
-            }
-            
-            switch(value[1]) {
-                case 0x00:
-                    //æ¨¡å—æœ¬åœ°é‡ç½®
-                    
-                break;
-                case 0x01:
-                    //APPè¿œç¨‹é‡ç½®
-                    
-                break;
-                case 0x02:
-                    //APPæ¢å¤å‡ºå‚é‡ç½®
-                    
-                break;
-                default:break;
-            }
-            
-            unsigned short send_len = 0;
-            send_len = set_wifi_uart_byte(send_len, sub_cmd);
-            wifi_uart_write_frame(MODULE_EXTEND_FUN_CMD, MCU_TX_VER, send_len);
-        }
-        break;
-        
-        default:break;
-    }
-}
-#endif
-
-#ifdef BLE_RELATED_FUNCTION_ENABLE
-/**
- * @brief  è“ç‰™åŠŸèƒ½æ€§æµ‹è¯•ç»“æœ
- * @param[in] {value} æ•°æ®ç¼“å†²åŒº
- * @param[in] {length} æ•°æ®é•¿åº¦
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void BLE_test_result(const unsigned char value[], unsigned short length)
-{
-    #error "è¯·è‡ªè¡Œå®ç°è“ç‰™åŠŸèƒ½æ€§æµ‹è¯•ç»“æœä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    unsigned char sub_cmd = value[0];
-    
-    if(0x03 != length) {
-        //æ•°æ®é•¿åº¦é”™è¯¯
-        return;
-    }
-    
-    if(0x01 != sub_cmd) {
-        //å­å‘½ä»¤é”™è¯¯
-        return;
-    }
-    
-    unsigned char result = value[1];
-    unsigned char rssi = value[2];
-        
-    if(result == 0) {
-        //æµ‹è¯•å¤±è´¥
-        if(rssi == 0x00) {
-            //æœªæ‰«æåˆ°åç§°ä¸º ty_mdevè“ç‰™ä¿¡æ ‡,è¯·æ£€æŸ¥
-        }else if(rssi == 0x01) {
-            //æ¨¡å—æœªæˆæƒ
-        }
-    }else if(result == 0x01) {
-        //æµ‹è¯•æˆåŠŸ
-        //rssiä¸ºä¿¡å·å¼ºåº¦(0-100, 0ä¿¡å·æœ€å·®ï¼Œ100ä¿¡å·æœ€å¼º)
-    }
-}
-#endif
-
-#ifdef VOICE_MODULE_PROTOCOL_ENABLE
-/**
- * @brief  è·å–è¯­éŸ³çŠ¶æ€ç ç»“æœ
- * @param[in] {result} è¯­éŸ³çŠ¶æ€ç 
- * @ref       0x00: ç©ºé—²
- * @ref       0x01: micé™éŸ³çŠ¶æ€
- * @ref       0x02: å”¤é†’
- * @ref       0x03: æ­£åœ¨å½•éŸ³
- * @ref       0x04: æ­£åœ¨è¯†åˆ«
- * @ref       0x05: è¯†åˆ«æˆåŠŸ
- * @ref       0x06: è¯†åˆ«å¤±è´¥
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void get_voice_state_result(unsigned char result)
-{
-    #error "è¯·è‡ªè¡Œå®ç°è·å–è¯­éŸ³çŠ¶æ€ç ç»“æœå¤„ç†ä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    switch(result) {
-        case 0:
-            //ç©ºé—²
-        break;
-    
-        case 1:
-            //micé™éŸ³çŠ¶æ€
-        break;
-        
-        case 2:
-            //å”¤é†’
-        break;
-        
-        case 3:
-            //æ­£åœ¨å½•éŸ³
-        break;
-        
-        case 4:
-            //æ­£åœ¨è¯†åˆ«
-        break;
-    
-        case 5:
-            //è¯†åˆ«æˆåŠŸ
-        break;
-        
-        case 6:
-            //è¯†åˆ«å¤±è´¥
-        break;
-        
-      default:break;
-    }
-}
-
-/**
- * @brief  MICé™éŸ³è®¾ç½®ç»“æœ
- * @param[in] {result} è¯­éŸ³çŠ¶æ€ç 
- * @ref       0x00: mic å¼€å¯
- * @ref       0x01: mic é™éŸ³
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void set_voice_MIC_silence_result(unsigned char result)
-{
-    #error "è¯·è‡ªè¡Œå®ç°MICé™éŸ³è®¾ç½®å¤„ç†ä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    if(result == 0) {
-        //mic å¼€å¯
-    }else {
-        //mic é™éŸ³
-    }
-}
-
-/**
- * @brief  speakeréŸ³é‡è®¾ç½®ç»“æœ
- * @param[in] {result} éŸ³é‡å€¼
- * @ref       0~10: éŸ³é‡èŒƒå›´
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void set_speaker_voice_result(unsigned char result)
-{
-    #error "è¯·è‡ªè¡Œå®ç°speakeréŸ³é‡è®¾ç½®ç»“æœå¤„ç†ä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    
-}
-
-/**
- * @brief  éŸ³é¢‘äº§æµ‹ç»“æœ
- * @param[in] {result} éŸ³é¢‘äº§æµ‹çŠ¶æ€
- * @ref       0x00: å…³é—­éŸ³é¢‘äº§æµ‹
- * @ref       0x01: mic1éŸ³é¢‘ç¯è·¯æµ‹è¯•
- * @ref       0x02: mic2éŸ³é¢‘ç¯è·¯æµ‹è¯•
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void voice_test_result(unsigned char result)
-{
-    #error "è¯·è‡ªè¡Œå®ç°éŸ³é¢‘äº§æµ‹ç»“æœå¤„ç†ä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    if(result == 0x00) {
-        //å…³é—­éŸ³é¢‘äº§æµ‹
-    }else if(result == 0x01) {
-        //mic1éŸ³é¢‘ç¯è·¯æµ‹è¯•
-    }else if(result == 0x02) {
-        //mic2éŸ³é¢‘ç¯è·¯æµ‹è¯•
-    }
-}
-
-/**
- * @brief  å”¤é†’äº§æµ‹ç»“æœ
- * @param[in] {result} å”¤é†’è¿”å›å€¼
- * @ref       0x00: å”¤é†’æˆåŠŸ
- * @ref       0x01: å”¤é†’å¤±è´¥(10sè¶…æ—¶å¤±è´¥)
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void voice_awaken_test_result(unsigned char result)
-{
-    #error "è¯·è‡ªè¡Œå®ç°å”¤é†’äº§æµ‹ç»“æœå¤„ç†ä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-    if(result == 0x00) {
-        //å”¤é†’æˆåŠŸ
-    }else if(result == 0x01) {
-        //å”¤é†’å¤±è´¥
-    }
-}
-
-/**
- * @brief  è¯­éŸ³æ¨¡ç»„æ‰©å±•åŠŸèƒ½
- * @param[in] {value} æ•°æ®ç¼“å†²åŒº
- * @param[in] {length} æ•°æ®é•¿åº¦
- * @return Null
- * @note   MCUéœ€è¦è‡ªè¡Œå®ç°è¯¥åŠŸèƒ½
- */
-void voice_module_extend_fun(const unsigned char value[], unsigned short length)
-{
-    unsigned char sub_cmd = value[0];
-    unsigned char play;
-    unsigned char bt_play;
-    unsigned short send_len = 0;
+  }
+  else
+  {
+    //²âÊÔ³É¹¦
+    //rssiÎªĞÅºÅÇ¿¶È(0-100, 0ĞÅºÅ×î²î£¬100ĞÅºÅ×îÇ¿)
+    if(rssi >= 30)              //ĞÅºÅÖµ´óÓÚ30%ÏÔÊ¾Õı³£
+      LED_RGB_Control(0,255,0);
+    else
+      LED_RGB_Control(255,0,0);
+    wifi_test_mode = 0;
+  }
   
-    switch(sub_cmd) {
-        case 0x00: { //å­å‘½ä»¤  MCUåŠŸèƒ½è®¾ç½®
-            if(0x02 != length) {
-                //æ•°æ®é•¿åº¦é”™è¯¯
-                return;
-            }
-            
-            if(value[1] == 0) {
-                //æˆåŠŸ
-            }else {
-                //å¤±è´¥
-            }
-        }
-        break;
-        
-        case 0x01: {  //å­å‘½ä»¤  çŠ¶æ€é€šçŸ¥
-            if(0x02 > length) {
-                //æ•°æ®é•¿åº¦é”™è¯¯
-                return;
-            }
-            
-            unsigned char play = 0xff;
-            unsigned char bt_play = 0xff;
-            
-            const char *str_buff = (const char *)&value[1];
-            const char *str_result = NULL;
-            
-            str_result = strstr(str_buff,"play") + my_strlen("play") + 2;
-            if(NULL == str_result) {
-                //æ•°æ®é”™è¯¯
-                goto ERR_EXTI;
-            }
-            
-            if(0 == memcmp(str_result, "true", my_strlen("true"))) {
-                play = 1;
-            }else if(0 == memcmp(str_result, "false", my_strlen("false"))) {
-                play = 0;
-            }else {
-                //æ•°æ®é”™è¯¯
-                goto ERR_EXTI;
-            }
-            
-            str_result = strstr(str_buff,"bt_play") + my_strlen("bt_play") + 2;
-            if(NULL == str_result) {
-                //æ•°æ®é”™è¯¯
-                goto ERR_EXTI;
-            }
-            
-            if(0 == memcmp(str_result, "true", my_strlen("true"))) {
-                bt_play = 1;
-            }else if(0 == memcmp(str_result, "false", my_strlen("false"))) {
-                bt_play = 0;
-            }else {
-                //æ•°æ®é”™è¯¯
-                goto ERR_EXTI;
-            }
-            
-            #error "è¯·è‡ªè¡Œå®ç°è¯­éŸ³æ¨¡ç»„çŠ¶æ€é€šçŸ¥å¤„ç†ä»£ç ,å®Œæˆåè¯·åˆ é™¤è¯¥è¡Œ"
-            //MCUè®¾ç½®æš‚ä»…æ”¯æŒâ€æ’­æ”¾/æš‚åœâ€ â€è“ç‰™å¼€å…³â€
-            //play    æ’­æ”¾/æš‚åœåŠŸèƒ½  1(æ’­æ”¾) / 0(æš‚åœ)
-            //bt_play è“ç‰™å¼€å…³åŠŸèƒ½   1(å¼€)   / 0(å…³)
-            
-            
-            
-            send_len = 0;
-            send_len = set_wifi_uart_byte(send_len, sub_cmd);
-            send_len = set_wifi_uart_byte(send_len, 0x00);
-            wifi_uart_write_frame(MODULE_EXTEND_FUN_CMD, MCU_TX_VER, send_len);
-        }
-        break;
-
-        default:break;
-    }
-    
-    return;
-
-ERR_EXTI:
-    send_len = 0;
-    send_len = set_wifi_uart_byte(send_len, sub_cmd);
-    send_len = set_wifi_uart_byte(send_len, 0x01);
-    wifi_uart_write_frame(MODULE_EXTEND_FUN_CMD, MCU_TX_VER, send_len);
-    return;
 }
 #endif
 
+#ifdef SUPPORT_MCU_FIRM_UPDATE
+/*****************************************************************************
+º¯ÊıÃû³Æ : mcu_firm_update_handle
+¹¦ÄÜÃèÊö : MCU½øÈë¹Ì¼şÉı¼¶Ä£Ê½
+ÊäÈë²ÎÊı : value:¹Ì¼ş»º³åÇø
+           position:µ±Ç°Êı¾İ°üÔÚÓÚ¹Ì¼şÎ»ÖÃ
+           length:µ±Ç°¹Ì¼ş°ü³¤¶È(¹Ì¼ş°ü³¤¶ÈÎª0Ê±,±íÊ¾¹Ì¼ş°ü·¢ËÍÍê³É)
+·µ»Ø²ÎÊı : ÎŞ
+Ê¹ÓÃËµÃ÷ : MCUĞèÒª×ÔĞĞÊµÏÖ¸Ã¹¦ÄÜ
+*****************************************************************************/
+unsigned char mcu_firm_update_handle(const unsigned char value[],unsigned long position,unsigned short length)
+{
+//  #error "Çë×ÔĞĞÍê³ÉMCU¹Ì¼şÉı¼¶´úÂë,Íê³ÉºóÇëÉ¾³ı¸ÃĞĞ"
+  unsigned long addr;
+ 
+  if(length == 0)
+  {
+#ifdef ENABLE_BOOT
+    //¹Ì¼şÊı¾İ·¢ËÍÍê³É
+    FlashBuffer.magic_code = FIREWARE_UPDATE_FLAG;
+    
+    if(Earse_Flash(PARA_ADDR) == ERROR)
+      return ERROR;
+    
+    //Ğ´ÈëÉı¼¶±êÖ¾
+    if(Write_Flash(PARA_ADDR,(unsigned char *)&FlashBuffer,sizeof(FlashBuffer)) == ERROR)
+      return ERROR;
+    
+    Reset();
+#endif
+  }
+  else
+  {
+#ifdef ENABLE_BOOT
+    //¹Ì¼şÊı¾İ´¦Àí
+    addr = FIREWARE_ADDR_H;
+     
+    if(position % 1024 == 0)
+    {
+      if(Earse_Flash(addr + position) == ERROR)
+        return ERROR;
+    }
+    
+    if(Write_Flash(addr + position,(unsigned char *)value,length) == ERROR)
+      return ERROR;
+#endif
+  }
 
+  return SUCCESS;
+}
+#endif
+/******************************************************************************
+                                WARNING!!!                     
+ÒÔÏÂº¯ÊıÓÃ»§ÇëÎğĞŞ¸Ä!!
+******************************************************************************/
 
+/*****************************************************************************
+º¯ÊıÃû³Æ : dp_download_handle
+¹¦ÄÜÃèÊö : dpÏÂ·¢´¦Àíº¯Êı
+ÊäÈë²ÎÊı : dpid:DPĞòºÅ
+           value:dpÊı¾İ»º³åÇøµØÖ·
+           length:dpÊı¾İ³¤¶È
+·µ»Ø²ÎÊı : ³É¹¦·µ»Ø:SUCCESS/Ê§°Ü·µ»Ø:ERRO
+Ê¹ÓÃËµÃ÷ : ¸Ãº¯ÊıÓÃ»§²»ÄÜĞŞ¸Ä
+*****************************************************************************/
+unsigned char dp_download_handle(unsigned char dpid,const unsigned char value[], unsigned short length)
+{
+  /*********************************
+  µ±Ç°º¯Êı´¦Àí¿ÉÏÂ·¢/¿ÉÉÏ±¨Êı¾İµ÷ÓÃ                    
+  ¾ßÌåº¯ÊıÄÚĞèÒªÊµÏÖÏÂ·¢Êı¾İ´¦Àí
+  Íê³ÉÓÃĞèÒª½«´¦Àí½á¹û·´À¡ÖÁAPP¶Ë,·ñÔòAPP»áÈÏÎªÏÂ·¢Ê§°Ü
+  ***********************************/
+  unsigned char ret;
+  switch(dpid)
+  {
+    case DPID_SWITCH:
+      //¿ª¹Ø´¦Àíº¯Êı
+      ret = dp_download_switch_handle(value,length);
+      break;
+    case DPID_MODE:
+      //Ä£Ê½´¦Àíº¯Êı
+      ret = dp_download_mode_handle(value,length);
+      break;
+    case DPID_SPEED:
+      //·çËÙ´¦Àíº¯Êı
+      ret = dp_download_speed_handle(value,length);
+      break;
+    case DPID_LOCK:
+      //Í¯Ëø´¦Àíº¯Êı
+      ret = dp_download_lock_handle(value,length);
+      break;
 
+  default:
+    break;
+  }
+  return ret;
+}
+/*****************************************************************************
+º¯ÊıÃû³Æ : get_download_cmd_total
+¹¦ÄÜÃèÊö : »ñÈ¡ËùÓĞdpÃüÁî×ÜºÍ
+ÊäÈë²ÎÊı : ÎŞ
+·µ»Ø²ÎÊı : ÏÂ·¢ÃüÁî×ÜºÍ
+Ê¹ÓÃËµÃ÷ : ¸Ãº¯ÊıÓÃ»§²»ÄÜĞŞ¸Ä
+*****************************************************************************/
+unsigned char get_download_cmd_total(void)
+{
+  return(sizeof(download_cmd) / sizeof(download_cmd[0]));
+}

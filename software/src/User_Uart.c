@@ -1,9 +1,9 @@
 /******************************************************************************
 文件名称: Uart.c
-文件标识: STC8A8K64S4A12
+文件标识: STC12SSA60S2
 摘    要: Uart硬件操作函数
 当前版本: V1.0	
-完成日期: 2021.01.23
+完成日期: 2013.11.18
 *******************************************************************************/
 #define	USER_UART_GLOBALS
 #include "include.h"
@@ -11,25 +11,35 @@
 
 
 
-bit busy;
+#define MAIN_Fosc		11059200L	//定义主时钟
+#define	BaudRate		9600UL	//选择波特率
+#define	Timer1_Reload	(65536UL -(MAIN_Fosc / 4 / BaudRate))		//Timer 1 重装值， 对应300KHZ
+#define	Timer2_Reload	(65536UL -(MAIN_Fosc / 4 / BaudRate))		//Timer 2 重装值， 对应300KHZ
+
+
 /*****************************************************************************
-函数名称 : uart3_init
-功能描述 : uart3初始化
+函数名称 : uart1_init
+功能描述 : uart1初始化
 输入参数 : 无
 返回参数 : 无
 使用说明 : 无
 *****************************************************************************/
-void uart3_init()
+void uart1_init(void)
 {
-	S3CON = 0X10;		//8位数据,可变波特率
-	TH2 = BRT >> 8;
-	TL2 = BRT;
-	AUXR = 0X14;	//Timer2 set as 1T mode ,Timer run enable
+	S1_8bit();																																	//8位数据
+	S1_USE_P30P31();																														//UART1 使用P30 P31口	默认
+	AUXR &= ~(1<<4);																														//Timer stop		波特率使用Timer2产生
+	AUXR |= 0x01;																																//S1 BRT Use Timer2;
+	AUXR |=  (1<<2);																														//Timer2 set as 1T mode
+	TH2 = (unsigned char)(Timer2_Reload >> 8);
+	TL2 = (unsigned char)Timer2_Reload;
+	AUXR |=  (1<<4);	//Timer run enable
 	REN = 1;	//允许接收
-	busy = 0;
-	IE2 = ES3;  //使能串口中断
+	ES  = 1;	//允许中断
 	EA = 1;		//允许全局中断
-	//S3BUF = 0x5a;            //发送测试数据
+	PS=1;
+	P3M1&=0XE7;
+	P3M0|=0X18;
 }
 /*****************************************************************************
 函数名称 : Uart_PutChar
@@ -38,11 +48,11 @@ void uart3_init()
 返回参数 : 无
 使用说明 : 无
 *****************************************************************************/
-void Uart_PutChar(uint8_t dat)
+void Uart_PutChar(unsigned char dat)
 {
-	while (busy);
-  busy = 1;
-	S3BUF = dat;
+	SBUF = dat;
+	while(!TI);
+	TI = 0;
 }
 /*****************************************************************************
 函数名称 : Uart1_ISR_Handle
@@ -51,18 +61,12 @@ void Uart_PutChar(uint8_t dat)
 返回参数 : 无
 使用说明 : 无
 *****************************************************************************/
-void Uart3Isr() interrupt 17
+void Uart1_ISR_Handle (void) interrupt UART1_VECTOR
 {
-	if (S3CON & 0x02)
-    {
-        S3CON &= ~0x02;
-			  busy = 0;
-			P12 = !P12;                             //测试端口
-    }
-		if (S3CON & 0x01)
-    {
-        S3CON &= ~0x01;
-			P11 = !P11;
-			uart_receive_input(S3BUF);             //测试端口
-    }
+	if(RI)
+	{
+		RI = 0;
+
+		uart_receive_input(SBUF);		
+	}
 }
