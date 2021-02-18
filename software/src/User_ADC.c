@@ -20,8 +20,8 @@
 #ifdef Interrupt
 
 /*****************************************************************************
-函数名称 : I2C_init
-功能描述 : I2C初始化
+函数名称 : ADC_init
+功能描述 : ADC初始化
 输入参数 : 无
 返回参数 : 无
 使用说明 : 无
@@ -38,8 +38,8 @@ void ADC_init()
 }
 
 /*****************************************************************************
-函数名称 : I2C_Isr
-功能描述 : I2C中断处理函数
+函数名称 : ADC_Isr
+功能描述 : ADC中断处理函数
 输入参数 : 无
 返回参数 : 无
 使用说明 : 无
@@ -55,8 +55,8 @@ void ADC_Isr() interrupt 5
 #elif defined(Query)
 
 /*****************************************************************************
-函数名称 : I2C_init
-功能描述 : I2C初始化
+函数名称 : ADC_init
+功能描述 : ADC初始化
 输入参数 : 无
 返回参数 : 无
 使用说明 : 无
@@ -69,8 +69,8 @@ void ADC_init()
 	ADC_CONTR = 0x80;                           //使能ADC模块
 }
 /*****************************************************************************
-函数名称 : Wait
-功能描述 : 检测状态
+函数名称 : ADC_read
+功能描述 : ADC数据查询
 输入参数 : 无
 返回参数 : 无
 使用说明 : 无
@@ -94,8 +94,8 @@ int ADC_read()
 
 
 /*****************************************************************************
-函数名称 : WriteCmd
-功能描述 : 写指令函数
+函数名称 : Get_Voltage
+功能描述 : 电池电量处理函数
 输入参数 : command：指令
 返回参数 : 无
 使用说明 : 无
@@ -105,8 +105,7 @@ void Get_Voltage()
 	int res;
 	int vcc;  //电池电压，单位mv
 	int i;
-	
-	//ADC_init();
+
 	ADC_read();
 	ADC_read();
 	res = 0;
@@ -183,6 +182,5 @@ void Get_Voltage()
 		OLED_ShowNum(96,0,FlashBuffer.Power,3,8);
 		OLED_ShowChar(120,0,'%',8);
 	}
-	mcu_dp_enum_update(DPID_BATTERY_STATE,FlashBuffer.Power);
 	mcu_dp_value_update(DPID_BATTERY_PERCENTAGE,FlashBuffer.Power); //VALUE型数据上报;
 }

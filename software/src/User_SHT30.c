@@ -59,7 +59,7 @@ uint8_t sht_crc(uint8_t *shtdata, uint8_t count)
 函数名称 : sht30_read
 功能描述 : SHT30数据读取，通过oled显示
 输入参数 : 无
-返回参数 : 五
+返回参数 : 无
 使用说明 : 无
 *****************************************************************************/
 void sht30_read()
@@ -105,9 +105,9 @@ void sht30_read()
 		e = (FlashBuffer.humidity/100)*6.105*exp(17.27*T/(237.7+T));//水气压计算
 		AT = 1.07*T+0.2*e-2.7;            //体感温度计算
 		
-		
 		mcu_dp_value_update(DPID_TEMP_CURRENT,FlashBuffer.temper);     //VALUE型数据上报;
-    mcu_dp_value_update(DPID_HUMIDITY_VALUE,FlashBuffer.humidity); //VALUE型数据上报;
+		mcu_dp_value_update(DPID_HUMIDITY_VALUE,FlashBuffer.humidity); //VALUE型数据上报;
+		
 		OLED_ShowNum(32,4,T,2,16);   //显示温度
 		if(T>0)
 			OLED_ShowChar(48,4,'`',16);

@@ -11,13 +11,49 @@
 
 
 /*****************************************************************************
+函数名称 : WriteCmd
+功能描述 : 写指令函数
+输入参数 : command：指令
+返回参数 : 无
+使用说明 : 无
+*****************************************************************************/
+static void WriteCmd(uint8_t command ,uint8_t addr)
+{
+	Start();
+	SendData(addr);//OLED地址
+	SendACK();
+	SendData(0x00);//寄存器地址
+	SendACK();
+	SendData(command);
+	SendACK();
+	Stop();
+}
+/*****************************************************************************
+函数名称 : WriteDat
+功能描述 : 写数据函数
+输入参数 : Data：数据
+返回参数 : 无
+使用说明 : 无
+*****************************************************************************/
+static void WriteDat(uint8_t Data,uint8_t addr)
+{
+	Start();
+	SendData(addr);                        //D/C#=0; R/W#=0
+	SendACK();       
+	SendData(0x40);                        //write data
+	SendACK();       
+	SendData(Data);
+	SendACK();       
+	Stop();
+}
+/*****************************************************************************
 函数名称 : OLED_WR_Byte
 功能描述 : OLED写一字节
 输入参数 : dat：要写入的数据 cmd=1写指令，cmd=0写数据
 返回参数 : 无
 使用说明 : 无
 *****************************************************************************/
-void OLED_WR_Byte(unsigned dat,unsigned cmd)
+static void OLED_WR_Byte(unsigned dat,unsigned cmd)
 {
 	if(cmd==1)
 	{
@@ -35,21 +71,21 @@ void OLED_WR_Byte(unsigned dat,unsigned cmd)
 返回参数 : 无
 使用说明 : 无
 *****************************************************************************/ 
-void OLED_OLED_WR_Byte_con(uint8_t dat[], uint16_t count)//写入连续数据count个
-{
-	int i = 0;
-	Start();
-	SendData(OLED_Address);                        //D/C#=0; R/W#=0
-	SendACK();       
-	SendData(0x40);                        //write data
-	SendACK();       
-	for(i = 0 ;i < count ;i++)
-	{
-		SendData(dat[i]);
-		SendACK();
-	}
-	Stop();
-}
+//void OLED_OLED_WR_Byte_con(uint8_t dat[], uint16_t count)//写入连续数据count个
+//{
+//	int i = 0;
+//	Start();
+//	SendData(OLED_Address);                        //D/C#=0; R/W#=0
+//	SendACK();       
+//	SendData(0x40);                        //write data
+//	SendACK();       
+//	for(i = 0 ;i < count ;i++)
+//	{
+//		SendData(dat[i]);
+//		SendACK();
+//	}
+//	Stop();
+//}
 /*****************************************************************************
 函数名称 : OLED_OLED_WR_Byte_same
 功能描述 : 连续写入count个相同的数据
@@ -126,6 +162,27 @@ void OLED_Clear(void)
     for(n=0; n<128; n++)OLED_WR_Byte(0x00,0); //写0x00到屏幕寄存器上
   }
 }
+///*****************************************************************************
+//函数名称 : OLED_Clear_part
+//功能描述 : OLED局部清屏
+//输入参数 : x0：起始列地址（0~127）
+//					 y0：起始页地址（0~7）
+//					 x1：终止列地址（1~128）
+//					 y1：终止页地址（1~8）
+//返回参数 : 无
+//使用说明 : 无
+//*****************************************************************************/
+//void OLED_Clear_part(uint8_t x0,uint8_t y0,uint8_t x1,uint8_t y1)
+//{
+//  uint8_t i,n;              //定义变量
+//  for(i=y0; i<y1; i++)
+//  {
+//    OLED_WR_Byte(0xb0+i,1); //设置页地址（0~7）
+//    OLED_WR_Byte(0x00,1);   //设置显示位置—列低地址
+//    OLED_WR_Byte(0x10,1);   //设置显示位置—列高地址
+//    for(n=x0; n<x1; n++)OLED_WR_Byte(0x00,0); //写0x00到屏幕寄存器上
+//  }
+//}
 /*****************************************************************************
 函数名称 : OLED_SetPos
 功能描述 : 设置开始的光标位置
@@ -357,99 +414,3 @@ void OLED_DrawBMP(uint8_t x0,uint8_t y0,uint8_t x1,uint8_t y1,uint8_t BMP[])
     }
   }
 }
-/*****************************************************************************
-函数名称 : OLED_ShowInt
-功能描述 : 
-输入参数 : 无
-返回参数 : 无
-使用说明 : 无
-*****************************************************************************/ 
-//****************功能描述： 显示6*8或8*16的5位整数   显示的坐标（x,y），y为页范围0～7****************************
- 
-/*例
-OLED_ShowInt(0,0,0,1);   //在(0,0)处，显示6*8的"0"
-OLED_ShowInt(5,4,12345,2);//在(5,4)处，显示8*16的"12345"
-*/
-/*void OLED_ShowInt(uint8_t x, uint8_t y, int Data, uint8_t TextSize)
-{
-  uint8_t temp;
-  OLED_SetPos(x,y);
-  switch(TextSize)
-  {
-  case 1:
-  {
-    if(Data<0)
-    {
-      OLED_ShowChar(x,y,'-',1);
-      x+=6;
-      Data=-Data;
-    }
-    //接下来要显示正数，清空上一次显示负数的个位
-    //负数比正数多一个负号，额外占了一个显示位
-    OLED_ShowChar(x+30,y,' ',1);
- 
-    temp=Data/10000;
-    OLED_ShowChar(x,y,(temp+'0'),1);
- 
-    Data%=10000;
-    temp=Data/1000;
-    OLED_ShowChar(x+6,y,(temp+'0'),1);
- 
-    Data%=1000;
-    temp=Data/100;
-    OLED_ShowChar(x+12,y,(temp+'0'),1);
- 
-    Data%=100;
-    temp=Data/10;
-    OLED_ShowChar(x+18,y,(temp+'0'),1);
- 
-    Data%=10;
-    temp=Data;
-    OLED_ShowChar(x+24,y,(temp+'0'),1);
-  }
-  break;
-  case 2:
-  {
-    if(Data<0)
-    {
-      OLED_ShowChar(x,y,'-',2);
-      x+=8;
-      Data=-Data;
-    }
-    //接下来要显示正数，清空上一次显示负数的个位
-    //负数比正数多一个负号，额外占了一个显示位
-    OLED_ShowChar(x+40,y,' ',2);
- 
-    temp=Data/10000;
-    OLED_ShowChar(x,y,(temp+'0'),2);
- 
-    Data%=10000;
-    temp=Data/1000;
-    OLED_ShowChar(x+8,y,(temp+'0'),2);
- 
-    Data%=1000;
-    temp=Data/100;
-    OLED_ShowChar(x+16,y,(temp+'0'),2);
- 
-    Data%=100;
-    temp=Data/10;
-    OLED_ShowChar(x+24,y,(temp+'0'),2);
- 
-    Data%=10;
-    temp=Data;
-    OLED_ShowChar(x+32,y,(temp+'0'),2);
-  }
-  break;
-  }
-}*/
-
-
-/*void OLED_ShowData_uchar(uint8_t x, uint8_t y, uint8_t dat,uint8_t TextSize)		//显示无符号char数据
-{
-	uint8_t display_tab[4];
-	display_tab[0]=dat/100+'0';
-	display_tab[1]=dat/10%10+'0';
-	display_tab[2]=dat%10+'0';
-	//display_tab[3]='\n';
-	OLED_ShowStr(x,y,display_tab,TextSize);
-}*/
